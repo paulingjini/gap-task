@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="it"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gestione Attività</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: '#4F46E5', // Indigo-600
+              hover: '#4338CA', // Indigo-700
+            },
+            'background-light': '#F9FAFB', // Gray-50
+            'background-dark': '#111827', // Gray-900
+            'surface-light': '#FFFFFF',
+            'surface-dark': '#1F2937', // Gray-800
+            'text-light': '#1F2937', // Gray-800
+            'text-dark': '#F9FAFB', // Gray-50
+            'text-secondary-light': '#6B7280', // Gray-500
+            'text-secondary-dark': '#9CA3AF', // Gray-400
+            'border-light': '#E5E7EB', // Gray-200
+            'border-dark': '#374151', // Gray-700
+          },
+          fontFamily: {
+            display: ["Inter", "sans-serif"],
+          },
+          borderRadius: {
+            DEFAULT: "0.5rem",
+          },
+        },
+      },
+    };
+  </script>
+<style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark p-4 sm:p-6 lg:p-8">
+<div class="max-w-7xl mx-auto">
+<header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+<div class="flex items-center space-x-2 mb-4 sm:mb-0">
+<div class="bg-surface-light dark:bg-surface-dark p-2 rounded-lg border border-border-light dark:border-border-dark">
+<div class="flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-md">
+<button class="px-3 py-1.5 text-sm font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md shadow-sm">Attività</button>
+<button class="px-3 py-1.5 text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md">Riepilogo</button>
+<button class="px-3 py-1.5 text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md">Storico</button>
+<button class="px-3 py-1.5 text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md">Avvisi</button>
+</div>
+</div>
+</div>
+<div class="flex items-center space-x-2">
+<button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-icons text-text-secondary-light dark:text-text-secondary-dark">language</span>
+</button>
+<button class="flex items-center space-x-2 px-4 py-2 bg-primary-DEFAULT hover:bg-primary-hover text-white rounded-lg text-sm font-semibold">
+<span class="material-icons text-base">settings</span>
+<span>Configura Campi</span>
+</button>
+</div>
+</header>
+<main class="bg-surface-light dark:bg-surface-dark p-6 rounded-lg shadow-sm border border-border-light dark:border-border-dark">
+<div class="flex flex-wrap gap-4 items-center mb-4">
+<div class="relative flex-grow sm:flex-grow-0">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark">search</span>
+<input class="w-full sm:w-64 pl-10 pr-4 py-2 border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark rounded-lg focus:ring-primary-DEFAULT focus:border-primary-DEFAULT text-sm" placeholder="Cerca attività..." type="text"/>
+</div>
+<button class="flex items-center space-x-2 px-4 py-2 border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700">
+<span class="material-icons text-base">add</span>
+<span>Aggiungi Attività</span>
+</button>
+<button class="flex items-center space-x-2 px-4 py-2 border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700">
+<span class="material-icons text-base">filter_list</span>
+<span>Filtri</span>
+</button>
+<button class="flex items-center space-x-2 px-4 py-2 border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700">
+<span>Raggruppa per: <strong>Progetto</strong></span>
+<span class="material-icons text-base">expand_more</span>
+</button>
+<div class="flex-grow"></div>
+<button class="flex items-center space-x-2 px-4 py-2 border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700">
+<span class="material-icons text-base">file_upload</span>
+<span>Importa</span>
+</button>
+<button class="flex items-center space-x-2 px-4 py-2 border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700">
+<span class="material-icons text-base">file_download</span>
+<span>Esporta</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-sm text-left">
+<thead class="text-xs text-text-secondary-light dark:text-text-secondary-dark uppercase">
+<tr>
+<th class="py-3 pr-6 w-2/5" scope="col">Titolo</th>
+<th class="py-3 px-6" scope="col">Stato <span class="material-icons text-base align-middle">arrow_upward</span></th>
+<th class="py-3 px-6" scope="col">Responsabile</th>
+<th class="py-3 px-6" scope="col">Priorità</th>
+<th class="py-3 px-6" scope="col">Scadenza</th>
+<th class="py-3 px-6" scope="col">Progetto</th>
+<th class="py-3 px-6" scope="col">Tag</th>
+<th an="" class="py-3 pl-6" scope="col">Tempo</th>
+</tr>
+<tr class="border-b border-border-light dark:border-border-dark">
+<th class="py-2 pr-6"><input class="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md px-2 py-1 text-sm focus:ring-primary-DEFAULT focus:border-primary-DEFAULT" placeholder="Filtra titolo..." type="text"/></th>
+<th class="py-2 px-6"><input class="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md px-2 py-1 text-sm focus:ring-primary-DEFAULT focus:border-primary-DEFAULT" placeholder="Filtra stato..." type="text"/></th>
+<th class="py-2 px-6"><input class="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md px-2 py-1 text-sm focus:ring-primary-DEFAULT focus:border-primary-DEFAULT" placeholder="Filtra resp..." type="text"/></th>
+<th class="py-2 px-6"><input class="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md px-2 py-1 text-sm focus:ring-primary-DEFAULT focus:border-primary-DEFAULT" placeholder="Filtra priorità" type="text"/></th>
+<th class="py-2 px-6"><input class="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md px-2 py-1 text-sm focus:ring-primary-DEFAULT focus:border-primary-DEFAULT" placeholder="mm/dd/yyyy" type="text"/></th>
+<th class="py-2 px-6"><input class="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md px-2 py-1 text-sm focus:ring-primary-DEFAULT focus:border-primary-DEFAULT" placeholder="Filtra progetto..." type="text"/></th>
+<th class="py-2 px-6"><input class="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md px-2 py-1 text-sm focus:ring-primary-DEFAULT focus:border-primary-DEFAULT" placeholder="Filtra tag..." type="text"/></th>
+<th class="py-2 pl-6"><input class="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md px-2 py-1 text-sm focus:ring-primary-DEFAULT focus:border-primary-DEFAULT" placeholder="Filtra te..." type="text"/></th>
+</tr>
+</thead>
+<tbody>
+<tr class="font-medium text-text-light dark:text-text-dark">
+<td class="py-3 pr-6" colspan="8">
+<div class="flex items-center space-x-2">
+<span class="material-icons">expand_more</span>
+<span>Progetto Phoenix</span>
+<span class="text-xs bg-gray-200 dark:bg-gray-600 rounded-full px-2 py-0.5">5</span>
+</div>
+</td>
+</tr>
+<tr class="border-b border-border-light dark:border-border-dark hover:bg-gray-50 dark:hover:bg-gray-700/50">
+<td class="py-3 pr-6">
+<div class="flex items-center space-x-3">
+<span class="material-icons text-green-500">check_circle_outline</span>
+<span class="text-text-light dark:text-text-dark">Sviluppo nuova dashboard analytics</span>
+</div>
+</td>
+<td class="py-3 px-6"><span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">In Corso</span></td>
+<td class="py-3 px-6">Anna Rossi</td>
+<td class="py-3 px-6"><span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Alta</span></td>
+<td class="py-3 px-6">2024-11-15</td>
+<td class="py-3 px-6">Progetto Phoenix</td>
+<td class="py-3 px-6"><span class="px-2 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">Frontend</span><span class="ml-1 px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">Q4-2024</span></td>
+<td class="py-3 pl-6 text-text-secondary-light dark:text-text-secondary-dark">04:35:00</td>
+</tr>
+<tr class="border-b border-border-light dark:border-border-dark hover:bg-gray-50 dark:hover:bg-gray-700/50">
+<td class="py-3 pr-6">
+<div class="flex items-center space-x-3 ml-7">
+<span class="material-icons text-green-500">check_circle_outline</span>
+<span class="text-text-light dark:text-text-dark">Definizione tracciamenti utente</span>
+</div>
+</td>
+<td class="py-3 px-6"><span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Fatto</span></td>
+<td class="py-3 px-6">Anna Rossi</td>
+<td class="py-3 px-6">Alta</td>
+<td class="py-3 px-6">2024-10-30</td>
+<td class="py-3 px-6">-</td>
+<td class="py-3 px-6">-</td>
+<td class="py-3 pl-6 text-text-secondary-light dark:text-text-secondary-dark">08:00:00</td>
+</tr>
+<tr class="border-b border-border-light dark:border-border-dark hover:bg-gray-50 dark:hover:bg-gray-700/50">
+<td class="py-3 pr-6">
+<div class="flex items-center space-x-3 ml-7">
+<span class="material-icons text-green-500">check_circle_outline</span>
+<span class="text-text-light dark:text-text-dark">Scrivere documento specifiche</span>
+</div>
+</td>
+<td class="py-3 px-6"><span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Fatto</span></td>
+<td class="py-3 px-6">Anna Rossi</td>
+<td class="py-3 px-6">-</td>
+<td class="py-3 px-6">2024-10-25</td>
+<td class="py-3 px-6">-</td>
+<td class="py-3 px-6">-</td>
+<td class="py-3 pl-6 text-text-secondary-light dark:text-text-secondary-dark">03:30:00</td>
+</tr>
+<tr class="border-b border-border-light dark:border-border-dark hover:bg-gray-50 dark:hover:bg-gray-700/50">
+<td class="py-3 pr-6">
+<div class="flex items-center space-x-3">
+<span class="material-icons text-orange-500">watch_later</span>
+<span class="text-text-light dark:text-text-dark">Redesign pagina pricing</span>
+</div>
+</td>
+<td class="py-3 px-6"><span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">In Revisione</span></td>
+<td class="py-3 px-6">Paolo Verdi</td>
+<td class="py-3 px-6"><span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Media</span></td>
+<td class="py-3 px-6">2024-11-22</td>
+<td class="py-3 px-6">Progetto Phoenix</td>
+<td class="py-3 px-6"><span class="px-2 py-1 text-xs font-medium rounded-full bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200">UX</span></td>
+<td class="py-3 pl-6 text-text-secondary-light dark:text-text-secondary-dark">12:15:00</td>
+</tr>
+<tr class="font-medium text-text-light dark:text-text-dark">
+<td class="py-3 pr-6" colspan="8">
+<div class="flex items-center space-x-2">
+<span class="material-icons">chevron_right</span>
+<span>Progetto Titan</span>
+<span class="text-xs bg-gray-200 dark:bg-gray-600 rounded-full px-2 py-0.5">2</span>
+</div>
+</td>
+</tr>
+<tr class="border-b border-border-light dark:border-border-dark hover:bg-gray-50 dark:hover:bg-gray-700/50">
+<td class="py-3 pr-6">
+<div class="flex items-center space-x-3">
+<span class="material-icons text-gray-400 dark:text-gray-500">radio_button_unchecked</span>
+<span class="text-text-light dark:text-text-dark">Preparare presentazione kick-off</span>
+</div>
+</td>
+<td class="py-3 px-6"><span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">Da Fare</span></td>
+<td class="py-3 px-6">Marco Bianchi</td>
+<td class="py-3 px-6"><span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Media</span></td>
+<td class="py-3 px-6">2024-11-20</td>
+<td class="py-3 px-6">Progetto Titan</td>
+<td class="py-3 px-6"><span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Marketing</span></td>
+<td class="py-3 pl-6 text-text-secondary-light dark:text-text-secondary-dark">00:00:00</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+<td class="py-3 pr-6">
+<div class="flex items-center space-x-3">
+<span class="material-icons text-gray-400 dark:text-gray-500">radio_button_unchecked</span>
+<span class="text-text-light dark:text-text-dark">Configurazione ambiente di test</span>
+</div>
+</td>
+<td class="py-3 px-6"><span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">Da Fare</span></td>
+<td class="py-3 px-6">Admin</td>
+<td class="py-3 px-6"><span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Bassa</span></td>
+<td class="py-3 px-6">2024-12-01</td>
+<td class="py-3 px-6">Progetto Titan</td>
+<td class="py-3 px-6"><span class="px-2 py-1 text-xs font-medium rounded-full bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200">DevOps</span></td>
+<td class="py-3 pl-6 text-text-secondary-light dark:text-text-secondary-dark">00:00:00</td>
+</tr>
+</tbody>
+</table>
+</div>
+</main>
+<section class="mt-8">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-xl font-bold text-text-light dark:text-text-dark">Riepilogo e Scadenze</h2>
+<div class="flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-md text-sm">
+<button class="px-3 py-1.5 font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md shadow-sm">Scadenze</button>
+<button class="px-3 py-1.5 font-medium text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md">Storico</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-surface-light dark:bg-surface-dark p-6 rounded-lg shadow-sm border border-border-light dark:border-border-dark">
+<h3 class="text-lg font-semibold mb-4 flex items-center"><span class="material-icons text-yellow-500 mr-2">warning</span> In Scadenza</h3>
+<ul class="space-y-4">
+<li class="flex items-start space-x-4">
+<div class="w-1 h-12 bg-yellow-400 rounded-full"></div>
+<div class="flex-grow">
+<p class="font-medium text-text-light dark:text-text-dark">Preparare presentazione kick-off</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Progetto Titan - Scade tra 2 giorni</p>
+</div>
+<span class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">20 Nov</span>
+</li>
+<li class="flex items-start space-x-4">
+<div class="w-1 h-12 bg-yellow-400 rounded-full"></div>
+<div class="flex-grow">
+<p class="font-medium text-text-light dark:text-text-dark">Redesign pagina pricing</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Progetto Phoenix - Scade tra 4 giorni</p>
+</div>
+<span class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">22 Nov</span>
+</li>
+<li class="flex items-start space-x-4">
+<div class="w-1 h-12 bg-green-400 rounded-full"></div>
+<div class="flex-grow">
+<p class="font-medium text-text-light dark:text-text-dark">Configurazione ambiente di test</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Progetto Titan - Scade il 1 Dic</p>
+</div>
+<span class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">01 Dic</span>
+</li>
+</ul>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark p-6 rounded-lg shadow-sm border border-border-light dark:border-border-dark">
+<h3 class="text-lg font-semibold mb-4 flex items-center"><span class="material-icons text-red-500 mr-2">error</span> Scadute</h3>
+<ul class="space-y-4">
+<li class="flex items-start space-x-4">
+<div class="w-1 h-12 bg-red-400 rounded-full"></div>
+<div class="flex-grow">
+<p class="font-medium text-text-light dark:text-text-dark">Sviluppo nuova dashboard</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Progetto Phoenix - Scaduta da 3 giorni</p>
+</div>
+<span class="text-sm font-medium text-red-500">15 Nov</span>
+</li>
+<li class="flex items-start space-x-4">
+<div class="w-1 h-12 bg-red-400 rounded-full"></div>
+<div class="flex-grow">
+<p class="font-medium text-text-light dark:text-text-dark">Definizione tracciamenti</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Progetto Phoenix - Scaduta il 30 Ott</p>
+</div>
+<span class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">30 Ott</span>
+</li>
+</ul>
+</div>
+</div>
+</section>
+</div>
+
+</body></html>
