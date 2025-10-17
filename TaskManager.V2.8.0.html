@@ -1,0 +1,2568 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Gestione Attività e Progetti</title>
+
+    <!-- External CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Source+Code+Pro:wght@400;500;700&family=Inconsolata:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom CSS -->
+    <style>/* CSS Reset and Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: var(--app-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    font-size: var(--app-font-size-base, 1rem);
+  }
+
+  /* Typography size adjustments */
+  .text-xs { font-size: calc(var(--app-font-size-base, 1rem) * 0.75); line-height: 1rem; }
+  .text-sm { font-size: calc(var(--app-font-size-base, 1rem) * 0.875); line-height: 1.25rem; }
+  .text-base { font-size: var(--app-font-size-base, 1rem); line-height: 1.5rem; }
+  .text-lg { font-size: calc(var(--app-font-size-base, 1rem) * 1.125); line-height: 1.75rem; }
+  .text-xl { font-size: calc(var(--app-font-size-base, 1rem) * 1.25); line-height: 1.75rem; }
+  .text-2xl { font-size: calc(var(--app-font-size-base, 1rem) * 1.5); line-height: 2rem; }
+  .text-3xl { font-size: calc(var(--app-font-size-base, 1rem) * 1.875); line-height: 2.25rem; }
+
+  /* COMPACT TABLE STYLES */
+  table {
+    font-size: var(--app-font-size-table, 0.875rem);
+  }
+
+  th, td {
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  .task-row-content td {
+      padding-top: 0.3rem !important;
+      padding-bottom: 0.3rem !important;
+  }
+
+  @media (max-width: 768px) {
+    th, td {
+      padding: 0.375rem 0.5rem !important;
+    }
+  }
+
+  /* Dark mode */
+  .dark {
+    color-scheme: dark;
+  }
+
+  .dark .bg-gray-50 { background-color: #111827; }
+  .dark .bg-white { background-color: #1F2937; }
+  .dark .bg-gray-100 { background-color: #374151; }
+  .dark .bg-gray-700 { background-color: #4B5563; }
+  .dark .bg-gray-800 { background-color: #1F2937; }
+  .dark .text-gray-800 { color: #F9FAFB; }
+  .dark .text-gray-500 { color: #9CA3AF; }
+  .dark .border-gray-200 { border-color: #374151; }
+  .dark .border-gray-700 { border-color: #4B5563; }
+
+  /* Utility Classes */
+  .bg-indigo-600 { background-color: #4F46E5; }
+  .bg-indigo-700 { background-color: #4338CA; }
+  .bg-green-500 { background-color: #10B981; }
+  .bg-red-500 { background-color: #EF4444; }
+
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+  }
+
+  .modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .timer-running {
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .timer-indicator {
+      width: 10px;
+      height: 10px;
+      background-color: #10B981;
+      border-radius: 50%;
+      animation: blink 1s infinite;
+      margin-right: 5px;
+  }
+
+  @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0.2; }
+      100% { opacity: 1; }
+  }
+
+  /* Inline edit styles */
+  .inline-edit-input {
+    outline: none;
+  }
+
+  .inline-edit-input:focus {
+    ring: 2px;
+    ring-color: #4F46E5;
+  }
+
+  td[ondblclick]:hover::after {
+    content: '✏️';
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    opacity: 0.5;
+  }
+
+  /* Fixed column widths */
+  .col-actions { width: 100px; }
+  .col-time { width: 120px; }
+  .col-id-exp { width: 40px; }
+  .col-status { width: 120px; }
+  .col-priority { width: 100px; }
+  .col-deadline { width: 100px; }
+
+  /* Subtask styles */
+  .subtask-indent-1 { padding-left: 2rem !important; }
+  .subtask-indent-2 { padding-left: 3.5rem !important; }
+  .subtask-indent-3 { padding-left: 5rem !important; }
+
+  .task-title-cell {
+      cursor: pointer;
+      position: relative;
+  }
+
+  .task-title-cell:hover .title-text {
+      text-decoration: underline;
+      text-decoration-color: #4F46E5;
+  }
+
+  .subtask-row-content {
+      background-color: var(--subtask-bg, #fcfcfc);
+  }
+  .dark .subtask-row-content {
+      background-color: var(--subtask-bg-dark, #28374a);
+  }
+  .subtask-row-content:hover {
+      background-color: var(--subtask-bg-hover, #f0f0ff) !important;
+  }
+  .dark .subtask-row-content:hover {
+      background-color: var(--subtask-bg-hover-dark, #334a62) !important;
+  }
+
+  .markdown-content-preview {
+      max-height: 100px;
+      overflow-y: auto;
+      border-left: 3px solid #4F46E5;
+      padding-left: 8px;
+      margin-top: 8px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #9CA3AF;
+  }
+
+  .empty-state .material-icons {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }</style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-50">
+
+<div id="app" class="min-h-screen p-4 sm:p-6 lg:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header Container -->
+        <div id="header-container"></div>
+
+        <!-- Main Content -->
+        <main id="main-content">
+            <!-- Views Container -->
+            <div id="views-container">
+                <div id="view-tasks" class="view-container"></div>
+                <div id="view-summary" class="view-container" style="display:none;"></div>
+                <div id="view-projects" class="view-container" style="display:none;"></div>
+                <div id="view-history" class="view-container" style="display:none;"></div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modals Container -->
+<div id="modals-container"></div>
+
+<!-- Loading Indicator -->
+<div id="loading-indicator" style="display: none;">
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+            <p class="mt-4 text-gray-700 dark:text-gray-300">Caricamento...</p>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Files - ORDINE CRITICO -->
+<!-- 1. Component Loader (PRIMO) -->
+
+
+<!-- 2. Core Configuration -->
+
+
+<!-- 3. Database Layer -->
+
+
+<!-- 4. Utilities -->
+
+
+<!-- 5. Business Logic Modules -->
+
+
+
+
+
+
+<!-- 6. UI Modules -->
+
+
+
+
+<!-- 7. Application Controller -->
+
+
+<!-- 8. Initialization (ULTIMO) -->
+
+
+<script>
+            const ComponentLoader = {
+                components: {"header":"<!-- Header Component -->\n<header class=\"flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 no-print\">\n    <div class=\"flex items-center space-x-2 mb-4 sm:mb-0\">\n      <div class=\"bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700\">\n        <div class=\"flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-md\">\n          <button onclick=\"ViewsManager.showView('tasks')\" id=\"btn-tasks\" class=\"px-3 py-1.5 text-sm font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md shadow-sm\">\n            Attività\n          </button>\n          <button onclick=\"ViewsManager.showView('summary')\" id=\"btn-summary\" class=\"px-3 py-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md\">\n            Riepilogo\n          </button>\n          <button onclick=\"ViewsManager.showView('projects')\" id=\"btn-projects\" class=\"px-3 py-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md\">\n            Progetti\n          </button>\n          <button onclick=\"ViewsManager.showView('history')\" id=\"btn-history\" class=\"px-3 py-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md\">\n            Storico\n          </button>\n        </div>\n      </div>\n    </div>\n    <div class=\"flex items-center space-x-2\">\n      <button onclick=\"App.toggleDarkMode()\" class=\"p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700\">\n        <span class=\"material-icons text-gray-500 dark:text-gray-400\">dark_mode</span>\n      </button>\n      <button onclick=\"ModalsManager.openFieldConfig()\" class=\"flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold\">\n        <span class=\"material-icons text-base\">settings</span>\n        <span>Configura Campi</span>\n      </button>\n      <button onclick=\"Utils.exportData()\" class=\"flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold\">\n        <span class=\"material-icons text-base\">file_download</span>\n        <span>Esporta</span>\n      </button>\n      <label for=\"import-file\" class=\"flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold cursor-pointer\">\n        <span class=\"material-icons text-base\">file_upload</span>\n        <span>Importa</span>\n      </label>\n      <input type=\"file\" id=\"import-file\" class=\"hidden\" onchange=\"Utils.importData(event)\">\n    </div>\n  </header>","tasks":"<!-- Tasks View Component -->\r\n<div id=\"view-tasks\" class=\"view-container\">\r\n    <div class=\"bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700\">\r\n      <div class=\"flex flex-wrap gap-4 items-center mb-4 no-print\">\r\n        <div class=\"relative flex-grow sm:flex-grow-0\">\r\n          <span class=\"material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400\">search</span>\r\n          <input id=\"search-input\" onkeyup=\"App.renderTasks()\" class=\"w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-sm\" placeholder=\"Cerca attività...\" type=\"text\"/>\r\n        </div>\r\n        <button onclick=\"ModalsManager.openNewTaskModal()\" class=\"flex items-center space-x-2 px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700\">\r\n          <span class=\"material-icons text-base\">add</span>\r\n          <span>Aggiungi Attività</span>\r\n        </button>\r\n        <div class=\"relative\">\r\n          <button onclick=\"App.toggleGroupMenu()\" class=\"flex items-center space-x-2 px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700\">\r\n            <span>Raggruppa: <strong id=\"current-group-label\">Progetto</strong></span>\r\n            <span class=\"material-icons text-base\">expand_more</span>\r\n          </button>\r\n          <div id=\"group-menu\" class=\"hidden absolute top-full mt-1 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 min-w-[200px]\">\r\n            <button onclick=\"App.setGroupBy('project')\" class=\"w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm\">Per Progetto</button>\r\n            <button onclick=\"App.setGroupBy('status')\" class=\"w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm\">Per Stato</button>\r\n            <button onclick=\"App.setGroupBy('priority')\" class=\"w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm\">Per Priorità</button>\r\n            <button onclick=\"App.setGroupBy('assignee')\" class=\"w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm\">Per Responsabile</button>\r\n            <button onclick=\"App.setGroupBy('category')\" class=\"w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm\">Per Categoria</button>\r\n            <button onclick=\"App.setGroupBy('none')\" class=\"w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm border-t border-gray-200 dark:border-gray-700\">Nessun Raggruppamento</button>\r\n          </div>\r\n        </div>\r\n        <div class=\"flex-grow\"></div>\r\n      </div>\r\n      \r\n      <div id=\"tasks-container\" class=\"overflow-x-auto\">\r\n        <!-- Tasks will be rendered here by JavaScript -->\r\n      </div>\r\n      \r\n      <!-- Pagination Controls -->\r\n      <div id=\"pagination-controls\" class=\"flex justify-between items-center mt-4 text-sm no-print\">\r\n          <span id=\"pagination-info\" class=\"text-gray-500 dark:text-gray-400\"></span>\r\n          <div class=\"flex space-x-2\">\r\n              <button id=\"prev-page-btn\" onclick=\"App.changePage(-1)\" disabled class=\"px-3 py-1 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed\">\r\n                  <span class=\"material-icons text-base align-middle\">chevron_left</span>\r\n              </button>\r\n              <button id=\"next-page-btn\" onclick=\"App.changePage(1)\" disabled class=\"px-3 py-1 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed\">\r\n                  <span class=\"material-icons text-base align-middle\">chevron_right</span>\r\n              </button>\r\n          </div>\r\n      </div>\r\n    </div>\r\n  \r\n    <!-- Deadlines Section -->\r\n    <section class=\"mt-8\">\r\n      <div class=\"flex items-center justify-between mb-4\">\r\n        <h2 class=\"text-xl font-bold text-gray-800 dark:text-gray-50\">Riepilogo e Scadenze</h2>\r\n      </div>\r\n      <div class=\"grid grid-cols-1 md:grid-cols-2 gap-6\">\r\n        <div class=\"bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700\">\r\n          <h3 class=\"text-lg font-semibold mb-4 flex items-center\">\r\n            <span class=\"material-icons text-yellow-500 mr-2\">warning</span> In Scadenza\r\n          </h3>\r\n          <ul id=\"upcoming-deadlines\" class=\"space-y-4\"></ul>\r\n        </div>\r\n        <div class=\"bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700\">\r\n          <h3 class=\"text-lg font-semibold mb-4 flex items-center\">\r\n            <span class=\"material-icons text-red-500 mr-2\">error</span> Scadute\r\n          </h3>\r\n          <ul id=\"overdue-tasks\" class=\"space-y-4\"></ul>\r\n        </div>\r\n      </div>\r\n    </section>\r\n  </div>","summary":"<!-- Summary View Component -->\r\n<div id=\"view-summary\" class=\"view-container\" style=\"display:none;\">\r\n    <div class=\"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8\">\r\n      <div class=\"bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700\">\r\n        <div class=\"flex items-center justify-between mb-2\">\r\n          <span class=\"text-gray-500 dark:text-gray-400\">Completate</span>\r\n          <span class=\"material-icons text-green-500\">check_circle</span>\r\n        </div>\r\n        <div class=\"text-3xl font-bold\" id=\"stat-complete\">0</div>\r\n        <div class=\"text-sm text-green-500 mt-1\" id=\"stat-complete-trend\">+0% vs mese scorso</div>\r\n      </div>\r\n      <div class=\"bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700\">\r\n        <div class=\"flex items-center justify-between mb-2\">\r\n          <span class=\"text-gray-500 dark:text-gray-400\">In Corso</span>\r\n          <span class=\"material-icons text-blue-500\">autorenew</span>\r\n        </div>\r\n        <div class=\"text-3xl font-bold\" id=\"stat-inprogress\">0</div>\r\n        <div class=\"text-sm text-gray-500 dark:text-gray-400 mt-1\">Stabile</div>\r\n      </div>\r\n      <div class=\"bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700\">\r\n        <div class=\"flex items-center justify-between mb-2\">\r\n          <span class=\"text-gray-500 dark:text-gray-400\">In Scadenza</span>\r\n          <span class=\"material-icons text-yellow-500\">warning</span>\r\n        </div>\r\n        <div class=\"text-3xl font-bold\" id=\"stat-upcoming\">0</div>\r\n        <div class=\"text-sm text-gray-500 dark:text-gray-400 mt-1\">Entro 7 giorni</div>\r\n      </div>\r\n      <div class=\"bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700\">\r\n        <div class=\"flex items-center justify-between mb-2\">\r\n          <span class=\"text-gray-500 dark:text-gray-400\">Scadute</span>\r\n          <span class=\"material-icons text-red-500\">error</span>\r\n        </div>\r\n        <div class=\"text-3xl font-bold\" id=\"stat-overdue\">0</div>\r\n        <div class=\"text-sm text-red-500 mt-1\" id=\"stat-overdue-trend\">-0% vs mese scorso</div>\r\n      </div>\r\n    </div>\r\n  \r\n    <div class=\"grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6\">\n      <div class=\"bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700\">\r\n        <h3 class=\"text-lg font-semibold mb-4\">Attività per Priorità</h3>\r\n        <canvas id=\"priority-chart\"></canvas>\n      </div>\n      <div class=\"bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700\">\n        <h3 class=\"text-lg font-semibold mb-4\">Attività per Stato</h3>\n        <canvas id=\"status-chart\"></canvas>\n      </div>\r\n      <div class=\"bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700\">\r\n        <h3 class=\"text-lg font-semibold mb-4\">Distribuzione per Responsabile</h3>\r\n        <div id=\"assignee-table\" class=\"overflow-x-auto\"></div>\r\n      </div>\r\n    </div>\r\n  </div>","projects":"<!-- Projects View Component -->\r\n<div id=\"view-projects\" class=\"view-container\" style=\"display:none;\">\r\n    <div class=\"bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700\">\r\n      <div class=\"flex justify-between items-center mb-6\">\r\n        <h2 class=\"text-2xl font-bold\">Gestione Progetti</h2>\r\n        <div class=\"flex items-center space-x-4\">\n          <div class=\"relative\">\n            <select id=\"project-sort-select\" onchange=\"ViewsManager.renderProjects()\" class=\"appearance-none w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 py-2 px-4 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500\">\n              <option value=\"name-asc\">Nome (A-Z)</option>\n              <option value=\"name-desc\">Nome (Z-A)</option>\n              <option value=\"status-asc\">Stato (A-Z)</option>\n              <option value=\"status-desc\">Stato (Z-A)</option>\n              <option value=\"progress-asc\">Avanzamento (%)</option>\n              <option value=\"progress-desc\">Avanzamento (100%)</option>\n            </select>\n            <div class=\"pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300\">\n              <span class=\"material-icons\">unfold_more</span>\n            </div>\n          </div>\n          <button onclick=\"ModalsManager.openProjectModal()\" class=\"flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold\">\n            <span class=\"material-icons text-base\">add</span>\n            <span>Nuovo Progetto</span>\n          </button>\n        </div>\n      </div>\r\n      <div id=\"projects-container\">\r\n        <!-- Projects will be rendered here by JavaScript -->\r\n      </div>\r\n    </div>\r\n  </div>","history":"<!-- History View Component -->\r\n<div id=\"view-history\" class=\"view-container\" style=\"display:none;\">\r\n    <div class=\"bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700\">\r\n      <div class=\"flex justify-between items-center mb-6\">\n        <h2 class=\"text-2xl font-bold\">Storico Modifiche</h2>\n        <div class=\"w-1/3\">\n          <input type=\"text\" id=\"history-search-input\" onkeyup=\"ViewsManager.renderHistory()\" placeholder=\"Cerca nello storico...\" class=\"w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500\">\n        </div>\n      </div>\n      <div id=\"history-container\">\r\n        <!-- History will be rendered here by JavaScript -->\r\n      </div>\r\n    </div>\r\n  </div>","details":"<!-- Details Modal Component -->\r\n<div id=\"details-modal\" class=\"modal\">\r\n    <div class=\"bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto\">\r\n      <div class=\"sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 flex justify-between items-center\">\r\n        <h2 class=\"text-2xl font-bold\" id=\"details-modal-title\">Dettagli Attività</h2>\r\n        <div class=\"flex items-center space-x-3\">\r\n          <button onclick=\"ModalsManager.closeDetailsModal()\" class=\"text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-50\">\r\n              <span class=\"material-icons\">close</span>\r\n          </button>\r\n        </div>\r\n      </div>\r\n      <div class=\"p-6\">\r\n          <form id=\"details-form\" onsubmit=\"ModalsManager.saveDetails(event)\">\r\n              <input type=\"hidden\" id=\"details-item-id\" />\r\n              <input type=\"hidden\" id=\"details-is-subtask\" />\r\n              \r\n              <div class=\"space-y-6\">\r\n                  <!-- Sezione Titolo/Info Base -->\r\n                  <div class=\"border-b pb-4\">\r\n                      <label class=\"block text-sm font-medium mb-2\">Titolo *</label>\r\n                      <div id=\"details-field-title\" class=\"text-xl font-bold p-2 border border-gray-200 dark:border-gray-700 rounded cursor-pointer\" ondblclick=\"TasksManager.enableInlineEdit(document.getElementById('details-item-id').value, 'title', this.textContent.trim(), this, document.getElementById('details-is-subtask').value === 'true')\">\r\n                          <!-- Populated by JS -->\r\n                      </div>\r\n                  </div>\r\n  \r\n                  <!-- Modulo Modifica/Visualizzazione -->\r\n                  <div class=\"grid grid-cols-1 md:grid-cols-2 gap-6 text-sm\">\r\n                      <div>\r\n                          <label class=\"block text-sm font-medium mb-2\">Stato *</label>\r\n                          <div id=\"details-field-status\" class=\"p-2 border border-gray-200 dark:border-gray-700 rounded relative\" ondblclick=\"TasksManager.enableInlineEdit(document.getElementById('details-item-id').value, 'status', this.dataset.value, this, document.getElementById('details-is-subtask').value === 'true')\"></div>\r\n                      </div>\r\n                      <div>\r\n                          <label class=\"block text-sm font-medium mb-2\">Priorità</label>\r\n                          <div id=\"details-field-priority\" class=\"p-2 border border-gray-200 dark:border-gray-700 rounded relative\" ondblclick=\"TasksManager.enableInlineEdit(document.getElementById('details-item-id').value, 'priority', this.dataset.value, this, document.getElementById('details-is-subtask').value === 'true')\"></div>\r\n                      </div>\r\n                      <div>\r\n                          <label class=\"block text-sm font-medium mb-2\">Responsabile</label>\r\n                          <div id=\"details-field-assignee\" class=\"p-2 border border-gray-200 dark:border-gray-700 rounded relative\" ondblclick=\"TasksManager.enableInlineEdit(document.getElementById('details-item-id').value, 'assignee', this.dataset.value, this, document.getElementById('details-is-subtask').value === 'true')\"></div>\r\n                      </div>\r\n                      <div>\r\n                          <label class=\"block text-sm font-medium mb-2\">Data Scadenza</label>\r\n                          <div id=\"details-field-deadline\" class=\"p-2 border border-gray-200 dark:border-gray-700 rounded relative\" ondblclick=\"TasksManager.enableInlineEdit(document.getElementById('details-item-id').value, 'deadline', this.dataset.value, this, document.getElementById('details-is-subtask').value === 'true')\"></div>\r\n                      </div>\r\n                      <div id=\"details-project-container\">\r\n                          <label class=\"block text-sm font-medium mb-2\">Progetto</label>\r\n                          <div id=\"details-field-project\" class=\"p-2 border border-gray-200 dark:border-gray-700 rounded relative\" ondblclick=\"TasksManager.enableInlineEdit(document.getElementById('details-item-id').value, 'project', this.dataset.value, this, false)\"></div>\r\n                      </div>\r\n                      <div>\r\n                          <label class=\"block text-sm font-medium mb-2\">Tags</label>\r\n                          <div id=\"details-field-tags\" class=\"p-2 border border-gray-200 dark:border-gray-700 rounded relative\" ondblclick=\"TasksManager.enableInlineEdit(document.getElementById('details-item-id').value, 'tags', this.dataset.value.split(','), this, document.getElementById('details-is-subtask').value === 'true')\"></div>\r\n                      </div>\r\n                  </div>\r\n  \r\n                  <!-- Descrizione (Markdown Editabile) -->\r\n                  <div class=\"border-t pt-4\">\r\n                      <h3 class=\"font-semibold mb-3 flex items-center\"><span class=\"material-icons text-base mr-2\">description</span> Descrizione (Markdown)</h3>\r\n                      \r\n                      <div id=\"details-field-description\" class=\"p-3 bg-gray-50 dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 relative\">\r\n                          <textarea id=\"description-textarea\" rows=\"4\" class=\"w-full px-2 py-1 bg-transparent focus:outline-none focus:ring-0 text-sm\" placeholder=\"Inserisci descrizione in Markdown...\" onkeyup=\"ModalsManager.liveMarkdownPreview(this.value)\"></textarea>\r\n                          <div id=\"markdown-preview\" class=\"markdown-content-preview text-xs text-gray-800 dark:text-gray-200\"></div>\r\n                      </div>\r\n                  </div>\r\n  \r\n                  <!-- Owners (Gestione automatica da @[] e manuale) -->\r\n                  <div class=\"border-t pt-4\" id=\"details-owners-section\">\r\n                      <div class=\"flex justify-between items-center mb-3\">\r\n                          <h3 class=\"font-semibold flex items-center\"><span class=\"material-icons text-base mr-2\">people</span> Owners</h3>\r\n                          <button type=\"button\" onclick=\"ModalsManager.addOwnerPrompt(document.getElementById('details-item-id').value)\" class=\"text-sm text-blue-600 hover:text-blue-800\">+ Aggiungi</button>\r\n                      </div>\r\n                      <div id=\"owners-list\" class=\"flex flex-wrap gap-2 text-sm\"></div>\r\n                  </div>\r\n  \r\n                  <!-- Sub-tasks -->\r\n                  <div id=\"details-subtasks-section\">\r\n                      <!-- Section populated by JS if applicable -->\r\n                  </div>\r\n              \r\n                  <!-- Note Cronologiche -->\r\n                  <div class=\"border-t pt-4\">\r\n                      <h3 class=\"font-semibold mb-3 flex items-center\"><span class=\"material-icons text-base mr-2\">notes</span> Note Cronologiche (Markdown)</h3>\r\n                      <div class=\"space-y-3 mb-4 max-h-64 overflow-y-auto\" id=\"notes-list\"></div>\r\n                      <div class=\"flex space-x-2\">\r\n                          <textarea id=\"new-note-input\" rows=\"3\" placeholder=\"Aggiungi una nota (supporta **Markdown**) o menziona con #tag o @owner...\" class=\"flex-grow px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm\"></textarea>\r\n                          <button type=\"button\" onclick=\"ModalsManager.addNoteFromInput(document.getElementById('details-item-id').value, document.getElementById('details-is-subtask').value === 'true')\" class=\"px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm h-10 self-start\">\r\n                          Aggiungi\r\n                          </button>\r\n                      </div>\r\n                  </div>\r\n  \r\n              </div>\r\n  \r\n              <div class=\"flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700\">\r\n                  <button type=\"button\" onclick=\"ModalsManager.closeDetailsModal()\" class=\"px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700\">\r\n                      Chiudi\r\n                  </button>\r\n                  <button type=\"submit\" class=\"px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold\">\r\n                      Salva Modifiche\r\n                  </button>\r\n              </div>\r\n          </form>\r\n      </div>\r\n    </div>\r\n  </div>","project":"<!-- Project Modal Component -->\r\n<div id=\"project-modal\" class=\"modal\">\r\n    <div class=\"bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4\">\r\n      <div class=\"p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center\">\r\n        <h2 class=\"text-2xl font-bold\">Nuovo Progetto</h2>\r\n        <button onclick=\"ModalsManager.closeProjectModal()\" class=\"text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-50\">\r\n          <span class=\"material-icons\">close</span>\r\n        </button>\r\n      </div>\r\n      <div class=\"p-6\">\r\n        <form id=\"project-form\" onsubmit=\"ModalsManager.saveProject(event)\">\r\n          <input type=\"hidden\" id=\"project-id\" />\r\n          \r\n          <div class=\"space-y-4\">\r\n            <div>\r\n              <label class=\"block text-sm font-medium mb-2\">Nome Progetto *</label>\r\n              <input type=\"text\" id=\"project-name\" required class=\"w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-lg focus:ring-indigo-600 focus:border-indigo-600\" />\r\n            </div>\r\n  \r\n            <div>\r\n              <label class=\"block text-sm font-medium mb-2\">Descrizione</label>\r\n              <textarea id=\"project-description\" rows=\"3\" class=\"w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-lg focus:ring-indigo-600 focus:border-indigo-600\"></textarea>\r\n            </div>\r\n  \r\n            <div>\r\n              <label class=\"block text-sm font-medium mb-2\">Project Manager</label>\r\n              <input type=\"text\" id=\"project-manager\" class=\"w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-lg focus:ring-indigo-600 focus:border-indigo-600\" />\r\n            </div>\r\n  \r\n            <div class=\"grid grid-cols-2 gap-4\">\r\n              <div>\r\n                <label class=\"block text-sm font-medium mb-2\">Data Inizio</label>\r\n                <input type=\"date\" id=\"project-start\" class=\"w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-lg focus:ring-indigo-600 focus:border-indigo-600\" />\r\n              </div>\r\n              <div>\r\n                <label class=\"block text-sm font-medium mb-2\">Data Fine</label>\r\n                <input type=\"date\" id=\"project-end\" class=\"w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-lg focus:ring-indigo-600 focus:border-indigo-600\" />\r\n              </div>\r\n            </div>\r\n  \r\n            <div>\r\n              <label class=\"block text-sm font-medium mb-2\">Stato</label>\r\n              <select id=\"project-status\" class=\"w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-lg focus:ring-indigo-600 focus:border-indigo-600\">\r\n                <option value=\"Attivo\">Attivo</option>\r\n                <option value=\"In Pausa\">In Pausa</option>\r\n                <option value=\"Completato\">Completato</option>\r\n              </select>\r\n            </div>\r\n          </div>\r\n  \r\n          <div class=\"flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700\">\r\n            <button type=\"button\" onclick=\"ModalsManager.closeProjectModal()\" class=\"px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700\">\r\n              Annulla\r\n            </button>\r\n            <button type=\"submit\" class=\"px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold\">\r\n              Salva Progetto\r\n            </button>\r\n          </div>\r\n        </form>\r\n      </div>\r\n    </div>\r\n  </div>","config":"<!-- Config Modal Component -->\r\n<div id=\"field-config-modal\" class=\"modal\">\r\n    <div class=\"bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto\">\r\n      <div class=\"sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 flex justify-between items-center\">\r\n        <h2 class=\"text-2xl font-bold\">Configurazione Campi e Colonne</h2>\r\n        <button onclick=\"ModalsManager.closeFieldConfig()\" class=\"text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-50\">\r\n          <span class=\"material-icons\">close</span>\r\n        </button>\r\n      </div>\r\n      <div class=\"p-6\">\r\n        <div class=\"grid grid-cols-1 lg:grid-cols-3 gap-6\">\r\n          <!-- Colonna 1: Colonne e Aspetto -->\r\n          <div>\r\n            <h3 class=\"text-lg font-semibold mb-4\">Aspetto e Colonne</h3>\r\n            <div class=\"space-y-4\">\r\n              <!-- Font Configuration -->\r\n              <div>\r\n                <label class=\"block text-sm font-medium mb-2\">Famiglia Font</label>\r\n                <select id=\"config-font-family\" onchange=\"App.saveConfig('fontFamily', this.value)\" class=\"w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-lg text-sm\">\r\n                  <option value=\"Inter\" style=\"font-family: 'Inter', sans-serif;\">Inter (Default)</option>\r\n                  <option value=\"Roboto\" style=\"font-family: 'Roboto', sans-serif;\">Roboto</option>\r\n                  <option value=\"Source Code Pro\" style=\"font-family: 'Source Code Pro', monospace;\">Source Code Pro</option>\r\n                  <option value=\"Inconsolata\" style=\"font-family: 'Inconsolata', monospace;\">Inconsolata</option>\r\n                </select>\r\n              </div>\r\n              <!-- Font Size Configuration -->\r\n              <div>\r\n                <label class=\"block text-sm font-medium mb-2\">Dimensione Base Font</label>\r\n                <select id=\"config-font-size\" onchange=\"App.saveConfig('fontSize', this.value)\" class=\"w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-lg text-sm\">\r\n                  <option value=\"small\">Piccolo (0.875rem)</option>\r\n                  <option value=\"medium\">Medio (1rem)</option>\r\n                  <option value=\"large\">Grande (1.125rem)</option>\r\n                </select>\r\n              </div>\r\n              <!-- Column Visibility -->\r\n              <h4 class=\"font-medium pt-2 border-t border-gray-200 dark:border-gray-700\">Visibilità Colonne</h4>\r\n              <p class=\"text-sm text-gray-500 dark:text-gray-400 mb-4\">\r\n                Trascina per riordinare. Usa gli interruttori per mostrare/nascondere.\r\n              </p>\r\n              <div id=\"columns-config\" class=\"space-y-2\"></div>\r\n            </div>\r\n          </div>\r\n          <!-- Colonna 2: Campi Personalizzati -->\r\n          <div>\r\n            <div class=\"flex justify-between items-center mb-4\">\r\n              <h3 class=\"text-lg font-semibold\">Campi Personalizzati</h3>\r\n              <button onclick=\"Utils.showNotification('Funzionalità in sviluppo', 'info')\" class=\"flex items-center space-x-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm\">\r\n                <span class=\"material-icons text-base\">add</span>\r\n                <span>Aggiungi</span>\r\n              </button>\r\n            </div>\r\n            <p class=\"text-sm text-gray-500 dark:text-gray-400 mb-4\">\r\n              Aggiungi campi personalizzati per estendere le attività.\r\n            </p>\r\n            <div id=\"custom-fields-config\" class=\"space-y-2\"></div>\r\n          </div>\r\n          <!-- Colonna 3: Domini Dropdown -->\r\n          <div>\r\n            <div class=\"flex justify-between items-center mb-4\">\r\n              <h3 class=\"text-lg font-semibold\">Domini Dropdown</h3>\r\n              <button onclick=\"Utils.showNotification('Funzionalità in sviluppo', 'info')\" class=\"flex items-center space-x-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm\">\r\n                <span class=\"material-icons text-base\">add</span>\r\n                <span>Nuovo</span>\r\n              </button>\r\n            </div>\r\n            <p class=\"text-sm text-gray-500 dark:text-gray-400 mb-4\">\r\n              Gestisci i valori per i campi dropdown.\r\n            </p>\r\n            <div id=\"field-domains-container\" class=\"space-y-2\"></div>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>"},
+                loadAll: async () => {
+                    document.getElementById('header-container').innerHTML = ComponentLoader.components.header || '';
+                    document.getElementById('view-tasks').innerHTML = ComponentLoader.components['tasks-view'] || '';
+                    document.getElementById('view-summary').innerHTML = ComponentLoader.components['summary-view'] || '';
+                    document.getElementById('view-projects').innerHTML = ComponentLoader.components['projects-view'] || '';
+                    document.getElementById('view-history').innerHTML = ComponentLoader.components['history-view'] || '';
+
+                    let modalsHTML = '';
+                    if (ComponentLoader.components['task-details-modal']) modalsHTML += ComponentLoader.components['task-details-modal'];
+                    if (ComponentLoader.components['project-modal']) modalsHTML += ComponentLoader.components['project-modal'];
+                    if (ComponentLoader.components['field-config-modal']) modalsHTML += ComponentLoader.components['field-config-modal'];
+                    document.getElementById('modals-container').innerHTML = modalsHTML;
+
+                    return Promise.resolve();
+                }
+            };
+        // Global Configuration
+const AppConfig = {
+    DB_NAME: 'TaskManagementDB',
+    DB_VERSION: 4,
+
+    DEFAULT_CONFIG: {
+      groupBy: 'project',
+      tasksPerPage: 15,
+      fontFamily: 'Inter',
+      fontSize: 'medium'
+    },
+
+    FIELD_DOMAINS: {
+      Stati: ['Da Fare', 'In Corso', 'In Revisione', 'Fatto', 'Bloccato', 'In Attesa'],
+      Priorità: ['Bassa', 'Media', 'Alta', 'Urgente'],
+      Categorie: ['Sviluppo', 'Design', 'Marketing', 'Amministrazione', 'Supporto']
+    },
+
+    STATUS_COLORS: {
+      'Da Fare': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+      'In Corso': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 status-in-progress',
+      'In Revisione': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+      'Fatto': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      'Bloccato': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+      'In Attesa': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+    },
+
+    PRIORITY_COLORS: {
+      'Bassa': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      'Media': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+      'Alta': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+      'Urgente': 'bg-red-200 text-red-900 dark:bg-red-800 dark:text-red-100'
+    },
+
+    PRIORITY_ORDER: {
+      'Urgente': 4,
+      'Alta': 3,
+      'Media': 2,
+      'Bassa': 1,
+      '': 0
+    },
+
+    MAX_RECURSION_DEPTH: 3
+  };
+
+// Database Management Module
+const DatabaseManager = {
+    db: null,
+
+    init: () => {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(AppConfig.DB_NAME, AppConfig.DB_VERSION);
+
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          DatabaseManager.db = request.result;
+          resolve(DatabaseManager.db);
+        };
+
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+
+          if (!db.objectStoreNames.contains('tasks')) {
+            const taskStore = db.createObjectStore('tasks', { keyPath: 'id', autoIncrement: true });
+            taskStore.createIndex('status', 'status', { unique: false });
+            taskStore.createIndex('project', 'project', { unique: false });
+            taskStore.createIndex('deadline', 'deadline', { unique: false });
+          }
+
+          if (!db.objectStoreNames.contains('projects')) {
+            db.createObjectStore('projects', { keyPath: 'id', autoIncrement: true });
+          }
+
+          if (!db.objectStoreNames.contains('customFields')) {
+            db.createObjectStore('customFields', { keyPath: 'id', autoIncrement: true });
+          }
+
+          if (!db.objectStoreNames.contains('fieldDomains')) {
+            db.createObjectStore('fieldDomains', { keyPath: 'id', autoIncrement: true });
+          }
+
+          if (!db.objectStoreNames.contains('subtasks')) {
+            const subtaskStore = db.createObjectStore('subtasks', { keyPath: 'id', autoIncrement: true });
+            subtaskStore.createIndex('parentId', 'parentId', { unique: false });
+          }
+
+          if (!db.objectStoreNames.contains('config')) {
+            db.createObjectStore('config', { keyPath: 'key' });
+          }
+
+          if (!db.objectStoreNames.contains('historyLog')) {
+            const historyStore = db.createObjectStore('historyLog', { keyPath: 'id', autoIncrement: true });
+            historyStore.createIndex('itemId', 'itemId', { unique: false });
+          }
+        };
+      });
+    },
+
+    add: async (storeName, data) => {
+      return new Promise((resolve, reject) => {
+        const transaction = DatabaseManager.db.transaction([storeName], 'readwrite');
+        const store = transaction.objectStore(storeName);
+        const request = store.add(data);
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    },
+
+    update: async (storeName, data) => {
+      return new Promise((resolve, reject) => {
+        const transaction = DatabaseManager.db.transaction([storeName], 'readwrite');
+        const store = transaction.objectStore(storeName);
+        const request = store.put(data);
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    },
+
+    get: async (storeName, id) => {
+      return new Promise((resolve, reject) => {
+          const transaction = DatabaseManager.db.transaction([storeName], 'readonly');
+          const store = transaction.objectStore(storeName);
+          const request = store.get(id);
+
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+      });
+    },
+
+    delete: async (storeName, id) => {
+      return new Promise((resolve, reject) => {
+        const transaction = DatabaseManager.db.transaction([storeName], 'readwrite');
+        const store = transaction.objectStore(storeName);
+        const request = store.delete(id);
+
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    },
+
+    getAll: async (storeName) => {
+      return new Promise((resolve, reject) => {
+        const transaction = DatabaseManager.db.transaction([storeName], 'readonly');
+        const store = transaction.objectStore(storeName);
+        const request = store.getAll();
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+  };
+
+// Utility Functions Module
+const Utils = {
+    formatDate: (dateStr) => {
+      if (!dateStr) return '-';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('it-IT', { year: 'numeric', month: 'short', day: 'numeric' });
+    },
+
+    formatSeconds: (seconds) => {
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    },
+
+    parseTimeToSeconds: (timeStr) => {
+      if (!timeStr) return 0;
+      const parts = timeStr.split(':').map(p => parseInt(p) || 0);
+      return (parts[0] * 3600) + (parts[1] * 60) + parts[2];
+    },
+
+    escapeHtml: (text) => {
+      if (!text) return '';
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.toString().replace(/[&<>"']/g, m => map[m]);
+    },
+
+    renderMarkdown: (text) => {
+      if (!text) return '';
+      if (typeof marked !== 'undefined' && marked.parse) {
+        return marked.parse(text);
+      }
+      return Utils.escapeHtml(text)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br>');
+    },
+
+    extractTagsAndOwners: (text) => {
+        if (!text) return { tags: [], owners: [] };
+
+        const tagRegex = /#\[([^\]]+)\]/g;
+        const ownerRegex = /@\[([^\]]+)\]/g;
+
+        const tags = [];
+        const owners = [];
+
+        let match;
+
+        while ((match = tagRegex.exec(text)) !== null) {
+            if (match[1]) tags.push(match[1].trim());
+        }
+
+        while ((match = ownerRegex.exec(text)) !== null) {
+            if (match[1]) owners.push(match[1].trim());
+        }
+
+        const simpleTagRegex = /(?:\s|^)#(\w+)/g;
+        while ((match = simpleTagRegex.exec(text)) !== null) {
+            if (match[1]) tags.push(match[1].trim());
+        }
+
+        return {
+            tags: Array.from(new Set(tags)).filter(t => t),
+            owners: Array.from(new Set(owners)).filter(o => o)
+        };
+    },
+
+    showNotification: (message, type = 'info') => {
+      const colors = {
+        success: 'bg-green-500',
+        danger: 'bg-red-500',
+        warning: 'bg-yellow-500',
+        info: 'bg-blue-500'
+      };
+
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    },
+
+    exportData: async () => {
+      try {
+        const dataToExport = {};
+        const stores = ['tasks', 'projects', 'subtasks', 'historyLog', 'config', 'fieldDomains'];
+
+        for (const storeName of stores) {
+          dataToExport[storeName] = await DatabaseManager.getAll(storeName);
+        }
+
+        const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `task-management-backup-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        Utils.showNotification('Dati esportati con successo!', 'success');
+      } catch (error) {
+        console.error('❌ Errore durante l\'esportazione:', error);
+        Utils.showNotification('Errore durante l\'esportazione.', 'danger');
+      }
+    },
+
+    importData: async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+
+          const transaction = DatabaseManager.db.transaction(DatabaseManager.db.objectStoreNames, 'readwrite');
+
+          for (const storeName of DatabaseManager.db.objectStoreNames) {
+            transaction.objectStore(storeName).clear();
+          }
+
+          for (const storeName in data) {
+            if (DatabaseManager.db.objectStoreNames.contains(storeName)) {
+              const store = transaction.objectStore(storeName);
+              for (const item of data[storeName]) {
+                store.put(item);
+              }
+            }
+          }
+
+          Utils.showNotification('Dati importati con successo! L\'app si ricaricherà.', 'success');
+          setTimeout(() => window.location.reload(), 2000);
+
+        } catch (error) {
+          console.error('❌ Errore durante l\'importazione:', error);
+          Utils.showNotification('Errore durante l\'importazione. Controlla il file.', 'danger');
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+// Tasks Management Module
+const TasksManager = {
+    tasks: [],
+    currentPage: 1,
+    currentSortBy: 'createdAt',
+    currentSortOrder: 'desc',
+    currentGroupBy: 'project',
+    editingCell: null,
+
+    loadTasks: async () => {
+      TasksManager.tasks = await DatabaseManager.getAll('tasks');
+    },
+
+    createTask: async (taskData) => {
+      const task = {
+        ...taskData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        owners: taskData.owners || [],
+        notes: taskData.notes || [],
+        timeSpent: taskData.timeSpent || '00:00:00',
+        status: taskData.status || 'Da Fare',
+        completed: false,
+        tags: taskData.tags || []
+      };
+
+      const id = await DatabaseManager.add('tasks', task);
+      await HistoryManager.logChange('tasks', { ...task, id });
+      await TasksManager.loadTasks();
+      return id;
+    },
+
+    updateTask: async (taskData) => {
+      taskData.updatedAt = new Date().toISOString();
+      await HistoryManager.logChange('tasks', taskData);
+      await DatabaseManager.update('tasks', taskData);
+      await TasksManager.loadTasks();
+    },
+
+    deleteTask: async (taskId) => {
+      if (!confirm('Sei sicuro di voler eliminare questa attività e tutte le sue sub-attività?')) {
+        return;
+      }
+
+      const subtasksToDelete = [];
+      const findNested = (id) => {
+        const children = SubtasksManager.subtasksMap[id] || [];
+        children.forEach(child => {
+          subtasksToDelete.push(child.id);
+          findNested(child.id);
+        });
+      };
+      findNested(taskId);
+
+      for (const id of subtasksToDelete) {
+        await DatabaseManager.delete('subtasks', id);
+      }
+
+      await DatabaseManager.delete('tasks', taskId);
+      await TasksManager.loadTasks();
+      Utils.showNotification('Attività eliminata', 'success');
+    },
+
+    toggleExpansion: async (taskId) => {
+      const task = await DatabaseManager.get('tasks', taskId);
+      if (task) {
+        task.expanded = !task.expanded;
+        await DatabaseManager.update('tasks', task);
+      }
+    },
+
+    filterTasks: (searchTerm, filters) => {
+      let filtered = [...TasksManager.tasks];
+
+      if (searchTerm) {
+        filtered = filtered.filter(task =>
+          (task.title && task.title.toLowerCase().includes(searchTerm)) ||
+          (task.description && task.description.toLowerCase().includes(searchTerm)) ||
+          (task.assignee && task.assignee.toLowerCase().includes(searchTerm)) ||
+          (task.project && task.project.toLowerCase().includes(searchTerm)) ||
+          (task.tags && task.tags.some(t => t.toLowerCase().includes(searchTerm))) ||
+          (task.status && task.status.toLowerCase().includes(searchTerm)) ||
+          (task.priority && task.priority.toLowerCase().includes(searchTerm))
+        );
+      }
+
+      if (filters.title) {
+        filtered = filtered.filter(t => (t.title || '').toLowerCase().includes(filters.title));
+      }
+      if (filters.status) {
+        filtered = filtered.filter(t => (t.status || '').toLowerCase().includes(filters.status));
+      }
+      if (filters.assignee) {
+        filtered = filtered.filter(t => (t.assignee || '').toLowerCase().includes(filters.assignee));
+      }
+      if (filters.priority) {
+        filtered = filtered.filter(t => (t.priority || '').toLowerCase().includes(filters.priority));
+      }
+      if (filters.project) {
+        filtered = filtered.filter(t => (t.project || '').toLowerCase().includes(filters.project));
+      }
+      if (filters.tags) {
+        filtered = filtered.filter(t => (t.tags || []).some(tag => tag.toLowerCase().includes(filters.tags)));
+      }
+      if (filters.deadline) {
+        filtered = filtered.filter(t => t.deadline && new Date(t.deadline) <= new Date(filters.deadline));
+      }
+
+      return filtered;
+    },
+
+    groupTasks: (tasks) => {
+      const grouped = {};
+
+      tasks.forEach(task => {
+        let key;
+
+        switch(TasksManager.currentGroupBy) {
+          case 'project':
+            key = task.project || 'Senza Progetto';
+            break;
+          case 'status':
+            key = task.status || 'Senza Stato';
+            break;
+          case 'priority':
+            key = task.priority || 'Senza Priorità';
+            break;
+          case 'assignee':
+            key = task.assignee || 'Non Assegnato';
+            break;
+          case 'category':
+            key = (task.tags && task.tags.length > 0) ? task.tags[0] : 'Senza Categoria';
+            break;
+          default:
+            key = 'Tutte le Attività';
+        }
+
+        if (!grouped[key]) {
+          grouped[key] = [];
+        }
+        grouped[key].push(task);
+      });
+
+      return grouped;
+    },
+
+    sortTasks: (tasks) => {
+      return tasks.sort((a, b) => {
+        let valA = a[TasksManager.currentSortBy];
+        let valB = b[TasksManager.currentSortBy];
+
+        if (TasksManager.currentSortBy === 'priority') {
+          valA = AppConfig.PRIORITY_ORDER[valA] || 0;
+          valB = AppConfig.PRIORITY_ORDER[valB] || 0;
+        }
+
+        if (valA < valB) return TasksManager.currentSortOrder === 'asc' ? -1 : 1;
+        if (valA > valB) return TasksManager.currentSortOrder === 'asc' ? 1 : -1;
+        return 0;
+      });
+    },
+
+    setSortBy: (field) => {
+      if (TasksManager.currentSortBy === field) {
+        TasksManager.currentSortOrder = TasksManager.currentSortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        TasksManager.currentSortBy = field;
+        TasksManager.currentSortOrder = 'desc';
+      }
+    },
+
+    getGroupByLabel: () => {
+      const labels = {
+        'project': 'Progetto',
+        'status': 'Stato',
+        'priority': 'Priorità',
+        'assignee': 'Responsabile',
+        'category': 'Categoria',
+        'none': 'Nessuno'
+      };
+      return labels[TasksManager.currentGroupBy] || 'Nessuno';
+    },
+
+    // Inline Editing
+    enableInlineEdit: async (itemId, field, currentValue, element, isSubtask = false) => {
+      if (TasksManager.editingCell) {
+        TasksManager.cancelInlineEdit();
+      }
+
+      TasksManager.editingCell = { itemId, field, element, originalValue: currentValue, isSubtask };
+
+      let inputHtml = '';
+
+      switch(field) {
+        case 'status':
+          const statuses = AppConfig.FIELD_DOMAINS['Stati'];
+          inputHtml = `<select class="inline-edit-input px-2 py-1 border rounded text-sm w-32">
+            ${statuses.map(s => `<option value="${Utils.escapeHtml(s)}" ${s === currentValue ? 'selected' : ''}>${Utils.escapeHtml(s)}</option>`).join('')}
+          </select>`;
+          break;
+
+        case 'priority':
+          const priorities = AppConfig.FIELD_DOMAINS['Priorità'];
+          inputHtml = `<select class="inline-edit-input px-2 py-1 border rounded text-sm w-24">
+            <option value="">Nessuna</option>
+            ${priorities.map(p => `<option value="${Utils.escapeHtml(p)}" ${p === currentValue ? 'selected' : ''}>${Utils.escapeHtml(p)}</option>`).join('')}
+          </select>`;
+          break;
+
+        case 'deadline':
+          inputHtml = `<input type="date" class="inline-edit-input px-2 py-1 border rounded text-sm w-32" value="${currentValue || ''}">`;
+          break;
+
+        case 'assignee':
+        case 'project':
+          inputHtml = `<input type="text" class="inline-edit-input px-2 py-1 border rounded text-sm" value="${currentValue || ''}" style="min-width: 150px;">`;
+          break;
+        case 'tags':
+          inputHtml = `<input type="text" class="inline-edit-input px-2 py-1 border rounded text-sm" value="${currentValue ? currentValue.join(', ') : ''}" style="min-width: 150px;">`;
+          break;
+        case 'timeSpent':
+          Utils.showNotification('Modifica tempo solo tramite Timer o Modale Dettagli.', 'warning');
+          TasksManager.editingCell = null;
+          return;
+        case 'title':
+          inputHtml = `<input type="text" class="inline-edit-input px-2 py-1 border rounded text-sm" value="${currentValue || ''}" style="min-width: 200px;">`;
+          break;
+      }
+
+      const buttonHtml = `<div class="inline-flex items-center space-x-1 ml-1">
+          <button type="button" onclick="TasksManager.saveInlineEdit()" class="text-green-600 hover:text-green-800"><span class="material-icons text-sm">check</span></button>
+          <button type="button" onclick="TasksManager.cancelInlineEdit()" class="text-red-600 hover:text-red-800"><span class="material-icons text-sm">close</span></button>
+      </div>`;
+
+      element.innerHTML = inputHtml + buttonHtml;
+
+      const input = element.querySelector('.inline-edit-input');
+      input.focus();
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          TasksManager.saveInlineEdit();
+        } else if (e.key === 'Escape') {
+          TasksManager.cancelInlineEdit();
+        }
+      });
+    },
+
+    saveInlineEdit: async () => {
+      if (!TasksManager.editingCell) return;
+
+      const { itemId, field, isSubtask } = TasksManager.editingCell;
+      const input = document.querySelector('.inline-edit-input');
+      let newValue = input.value;
+
+      const storeName = isSubtask ? 'subtasks' : 'tasks';
+      const item = await DatabaseManager.get(storeName, itemId);
+
+      if (item) {
+          if (field === 'tags') {
+              newValue = newValue.split(',').map(t => t.trim()).filter(t => t);
+          } else if (field === 'status') {
+              item.completed = (newValue === 'Fatto');
+          }
+
+          item[field] = newValue;
+          item.updatedAt = new Date().toISOString();
+
+          const { tags: newTags, owners: newOwners } = Utils.extractTagsAndOwners(newValue);
+          if (field === 'title' || field === 'description') {
+              const uniqueTags = new Set([...(item.tags || []), ...newTags]);
+              item.tags = Array.from(uniqueTags);
+
+              if (!isSubtask) {
+                  const uniqueOwners = new Set([...(item.owners || []), ...newOwners]);
+                  item.owners = Array.from(uniqueOwners);
+              }
+          }
+
+          await DatabaseManager.update(storeName, item);
+          await HistoryManager.logChange(storeName, item);
+
+          TasksManager.editingCell = null;
+          Utils.showNotification('Aggiornato!', 'success');
+      }
+    },
+
+    cancelInlineEdit: () => {
+      if (!TasksManager.editingCell) return;
+      TasksManager.editingCell = null;
+    }
+  };
+
+// Subtasks Management Module
+const SubtasksManager = {
+    subtasksMap: {},
+
+    loadSubtasks: async () => {
+      const allSubtasks = await DatabaseManager.getAll('subtasks');
+      SubtasksManager.subtasksMap = {};
+      allSubtasks.forEach(s => {
+          if (!SubtasksManager.subtasksMap[s.parentId]) {
+              SubtasksManager.subtasksMap[s.parentId] = [];
+          }
+          SubtasksManager.subtasksMap[s.parentId].push(s);
+      });
+    },
+
+    addSubtask: async (parentId, subtaskData) => {
+      let rootTask = TasksManager.tasks.find(t => t.id === parentId);
+
+      if (!rootTask) {
+          const allSubtasks = await DatabaseManager.getAll('subtasks');
+          let currentParent = allSubtasks.find(s => s.id === parentId);
+          if (currentParent) {
+              while (currentParent && !currentParent.isRootTask) {
+                  currentParent = allSubtasks.find(s => s.id === currentParent.parentId);
+                  if (currentParent && !currentParent.parentId) {
+                      rootTask = TasksManager.tasks.find(t => t.id === currentParent.id);
+                      break;
+                  }
+              }
+          }
+      }
+
+      if (rootTask) {
+          subtaskData.project = rootTask.project;
+      }
+
+      subtaskData.parentId = parentId;
+      subtaskData.createdAt = new Date().toISOString();
+      subtaskData.completed = false;
+      subtaskData.status = subtaskData.status || 'Da Fare';
+      subtaskData.priority = subtaskData.priority || '';
+      subtaskData.assignee = subtaskData.assignee || '';
+      subtaskData.deadline = subtaskData.deadline || '';
+      subtaskData.timeSpent = subtaskData.timeSpent || '00:00:00';
+      subtaskData.tags = subtaskData.tags || [];
+
+      await DatabaseManager.add('subtasks', subtaskData);
+      await SubtasksManager.loadSubtasks();
+      Utils.showNotification('Sub-attività aggiunta!', 'success');
+    },
+
+    getSubtasksRecursive: (parentId, currentLevel = 0, maxLevel = AppConfig.MAX_RECURSION_DEPTH) => {
+        if (currentLevel >= maxLevel) {
+            console.warn(`Max recursion level (${maxLevel}) reached for parentId ${parentId}. Stopping.`);
+            return [];
+        }
+
+        const children = SubtasksManager.subtasksMap[parentId] || [];
+
+        return children.map(subtask => {
+            return {
+                ...subtask,
+                children: SubtasksManager.getSubtasksRecursive(subtask.id, currentLevel + 1, maxLevel)
+            };
+        });
+    },
+
+    toggleSubtask: async (subtaskId) => {
+      const subtask = await DatabaseManager.get('subtasks', subtaskId);
+      if (subtask) {
+        subtask.completed = !subtask.completed;
+        subtask.status = subtask.completed ? 'Fatto' : 'Da Fare';
+        await DatabaseManager.update('subtasks', subtask);
+        await HistoryManager.logChange('subtasks', subtask);
+      }
+    },
+
+    deleteSubtask: async (subtaskId) => {
+      if (!confirm('Eliminare questa sub-attività e tutti i suoi sub-task annidati?')) {
+        return;
+      }
+
+      const subtasksToDelete = [subtaskId];
+
+      const findNested = (id) => {
+          const children = SubtasksManager.subtasksMap[id] || [];
+          children.forEach(child => {
+              subtasksToDelete.push(child.id);
+              findNested(child.id);
+          });
+      };
+      findNested(subtaskId);
+
+      try {
+          for (const id of subtasksToDelete) {
+              await DatabaseManager.delete('subtasks', id);
+          }
+          await SubtasksManager.loadSubtasks();
+          Utils.showNotification('Sub-attività/e eliminata/e', 'success');
+      } catch (error) {
+          console.error('Error deleting subtask tree:', error);
+          Utils.showNotification('Errore nell\'eliminazione della gerarchia sub-attività', 'danger');
+      }
+    },
+
+    updateSubtask: async (subtaskData) => {
+      subtaskData.updatedAt = new Date().toISOString();
+      await DatabaseManager.update('subtasks', subtaskData);
+      await HistoryManager.logChange('subtasks', subtaskData);
+      await SubtasksManager.loadSubtasks();
+    }
+  };
+
+// Projects Management Module
+const ProjectsManager = {
+    projects: [],
+
+    loadProjects: async () => {
+      ProjectsManager.projects = await DatabaseManager.getAll('projects');
+    },
+
+    createProject: async (projectData) => {
+      const project = {
+        ...projectData,
+        createdAt: new Date().toISOString()
+      };
+
+      await DatabaseManager.add('projects', project);
+      await ProjectsManager.loadProjects();
+      Utils.showNotification('Progetto creato', 'success');
+    },
+
+    updateProject: async (projectData) => {
+      projectData.updatedAt = new Date().toISOString();
+      await DatabaseManager.update('projects', projectData);
+      await ProjectsManager.loadProjects();
+      Utils.showNotification('Progetto aggiornato', 'success');
+    },
+
+    deleteProject: async (projectId) => {
+      if (!confirm('Eliminare questo progetto?')) {
+        return;
+      }
+
+      await DatabaseManager.delete('projects', projectId);
+      await ProjectsManager.loadProjects();
+      Utils.showNotification('Progetto eliminato', 'success');
+    },
+
+    getProjectTasks: (projectName) => {
+      return TasksManager.tasks.filter(t => t.project === projectName);
+    },
+
+    getProjectProgress: (projectName) => {
+      const tasks = ProjectsManager.getProjectTasks(projectName);
+      if (tasks.length === 0) return 0;
+
+      const completed = tasks.filter(t => t.status === 'Fatto').length;
+      return (completed / tasks.length) * 100;
+    }
+  };
+
+// History Management Module
+const HistoryManager = {
+    historyLog: [],
+
+    loadHistory: async () => {
+      HistoryManager.historyLog = await DatabaseManager.getAll('historyLog');
+    },
+
+    logChange: async (storeName, newData) => {
+      try {
+          const entityType = storeName.slice(0, -1);
+          const existingData = await DatabaseManager.get(storeName, newData.id);
+
+          let changes = {};
+          let changed = false;
+
+          if (!existingData) {
+              changes = { status: { newValue: 'Creato' } };
+              changed = true;
+          } else {
+              const fieldsToCompare = ['title', 'status', 'priority', 'assignee', 'deadline', 'project', 'timeSpent'];
+              fieldsToCompare.forEach(field => {
+                  const oldValue = existingData[field];
+                  const newValue = newData[field];
+
+                  if (field === 'timeSpent' && oldValue !== newValue && Utils.parseTimeToSeconds(oldValue) !== Utils.parseTimeToSeconds(newValue)) {
+                      changes[field] = { oldValue: oldValue, newValue: newValue };
+                      changed = true;
+                  } else if (field !== 'timeSpent' && oldValue !== newValue) {
+                      changes[field] = { oldValue: oldValue, newValue: newValue };
+                      changed = true;
+                  }
+              });
+
+              if (entityType === 'subtask' && existingData.completed !== newData.completed) {
+                  changes.completed = { oldValue: existingData.completed, newValue: newData.completed };
+                  changed = true;
+              }
+          }
+
+          if (changed) {
+              const logEntry = {
+                  itemId: newData.id,
+                  itemTitle: newData.title,
+                  itemType: entityType,
+                  parentId: newData.parentId || null,
+                  timestamp: new Date().toISOString(),
+                  changes: changes,
+                  action: existingData ? 'Aggiornamento' : 'Creazione'
+              };
+              await DatabaseManager.add('historyLog', logEntry);
+              await HistoryManager.loadHistory();
+          }
+      } catch (error) {
+          console.error('Error logging change:', error);
+      }
+    }
+  };
+
+// Timers Management Module
+const TimersManager = {
+    timerInterval: null,
+    timerStartTime: null,
+    currentTaskTime: 0,
+
+    subtaskTimerInterval: null,
+    activeSubtaskId: null,
+
+    toggleTimer: async (taskId) => {
+        if (TimersManager.activeSubtaskId && !TimersManager.timerInterval) {
+            await TimersManager.toggleSubtaskTimer();
+        }
+
+        if (!taskId) return;
+
+        const task = await DatabaseManager.get('tasks', taskId);
+        if (!task) return;
+
+        const btn = document.getElementById(`timer-btn-${taskId}`);
+        const timeDisplayEl = document.getElementById(`time-display-${taskId}`);
+
+        if (TimersManager.timerInterval && TimersManager.activeSubtaskId === taskId) {
+            clearInterval(TimersManager.timerInterval);
+            TimersManager.timerInterval = null;
+            TimersManager.activeSubtaskId = null;
+
+            task.timeSpent = Utils.formatSeconds(TimersManager.currentTaskTime);
+            await TasksManager.updateTask(task);
+
+            if (btn) {
+                btn.innerHTML = '<span class="material-icons text-base">play_arrow</span>';
+                btn.classList.remove('bg-red-500', 'hover:bg-red-600', 'timer-running');
+                btn.classList.add('bg-green-500', 'hover:bg-green-600');
+            }
+            Utils.showNotification('Timer attività principale fermato', 'info');
+        } else {
+            if (TimersManager.timerInterval) {
+               Utils.showNotification('Un altro timer principale è già in esecuzione.', 'warning');
+               return;
+            }
+
+            TimersManager.currentTaskTime = Utils.parseTimeToSeconds(task.timeSpent || '00:00:00');
+            TimersManager.timerStartTime = Date.now() - (TimersManager.currentTaskTime * 1000);
+            TimersManager.activeSubtaskId = taskId;
+
+            TimersManager.timerInterval = setInterval(() => {
+                TimersManager.currentTaskTime = Math.floor((Date.now() - TimersManager.timerStartTime) / 1000);
+                const formattedTime = Utils.formatSeconds(TimersManager.currentTaskTime);
+
+                const tableCellDisplay = document.getElementById(`time-display-${taskId}`);
+                if (tableCellDisplay) tableCellDisplay.textContent = formattedTime;
+
+                if (timeDisplayEl) timeDisplayEl.value = formattedTime;
+            }, 1000);
+
+            if (btn) {
+                btn.innerHTML = '<span class="material-icons text-base">pause</span>';
+                btn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                btn.classList.add('bg-red-500', 'hover:bg-red-600', 'timer-running');
+            }
+            Utils.showNotification('Timer attività principale avviato', 'success');
+        }
+    },
+
+    toggleSubtaskTimer: async (subtaskId = null) => {
+        const targetId = subtaskId || TimersManager.activeSubtaskId;
+        if (!targetId) return;
+
+        const subtask = await DatabaseManager.get('subtasks', targetId);
+        if (!subtask) return;
+
+        if (TimersManager.timerInterval) {
+            Utils.showNotification('Ferma prima il timer del task principale.', 'warning');
+            return;
+        }
+
+        const btn = document.getElementById(`timer-btn-${targetId}`);
+
+        if (TimersManager.activeSubtaskId === targetId && TimersManager.subtaskTimerInterval) {
+            clearInterval(TimersManager.subtaskTimerInterval);
+            TimersManager.subtaskTimerInterval = null;
+            TimersManager.activeSubtaskId = null;
+
+            const finalTimeSeconds = Utils.parseTimeToSeconds(btn.dataset.currenttime);
+
+            subtask.timeSpent = Utils.formatSeconds(finalTimeSeconds);
+            await SubtasksManager.updateSubtask(subtask);
+
+            if (btn) {
+                btn.innerHTML = '<span class="material-icons text-base">play_arrow</span>';
+                btn.classList.remove('bg-red-500', 'hover:bg-red-600', 'timer-running');
+                btn.classList.add('bg-green-500', 'hover:bg-green-600');
+            }
+            Utils.showNotification(`Timer sub-attività fermato: ${subtask.title}`, 'info');
+
+        } else if (TimersManager.activeSubtaskId && TimersManager.activeSubtaskId !== targetId) {
+            Utils.showNotification(`Ferma prima il timer sulla sub-attività #${TimersManager.activeSubtaskId}.`, 'warning');
+            return;
+        } else {
+            const initialTimeSeconds = Utils.parseTimeToSeconds(subtask.timeSpent || '00:00:00');
+            const startTime = Date.now() - (initialTimeSeconds * 1000);
+            TimersManager.activeSubtaskId = targetId;
+
+            TimersManager.subtaskTimerInterval = setInterval(() => {
+                const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+                const formattedTime = Utils.formatSeconds(elapsedSeconds);
+
+                const rowTimerDisplay = document.getElementById(`time-display-${targetId}`);
+
+                if (rowTimerDisplay) rowTimerDisplay.textContent = formattedTime;
+                if (btn) btn.dataset.currenttime = elapsedSeconds;
+
+            }, 1000);
+
+            if (btn) {
+                btn.innerHTML = '<span class="material-icons text-base">pause</span>';
+                btn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                btn.classList.add('bg-red-500', 'hover:bg-red-600', 'timer-running');
+            }
+            Utils.showNotification(`Timer sub-attività avviato: ${subtask.title}`, 'success');
+        }
+    }
+  };
+
+// Rendering Module
+const RenderingManager = {
+
+    renderTaskRow: async (task) => {
+      const subtasksTree = SubtasksManager.getSubtasksRecursive(task.id, 0, 3);
+      const allNestedSubtasks = [];
+      const flattenSubtasks = (list) => {
+          list.forEach(s => {
+              allNestedSubtasks.push(s);
+              if (s.children) flattenSubtasks(s.children);
+          });
+      };
+      flattenSubtasks(subtasksTree);
+
+      const completedSubtasks = allNestedSubtasks.filter(s => s.completed).length;
+      const totalSubtasks = allNestedSubtasks.length;
+      const subtaskProgress = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
+
+      let totalTimeSeconds = Utils.parseTimeToSeconds(task.timeSpent || '00:00:00');
+      let isTimingSelf = TimersManager.activeSubtaskId === task.id && TimersManager.timerInterval;
+
+      if (isTimingSelf) {
+          totalTimeSeconds = TimersManager.currentTaskTime;
+      }
+
+      let isAnySubtaskTiming = false;
+      for (const subtask of allNestedSubtasks) {
+          let subTime = Utils.parseTimeToSeconds(subtask.timeSpent || '00:00:00');
+          if(TimersManager.activeSubtaskId === subtask.id && TimersManager.subtaskTimerInterval) {
+              subTime = TimersManager.currentTaskTime;
+              isAnySubtaskTiming = true;
+          }
+          totalTimeSeconds += subTime;
+      }
+      const totalTimeFormatted = Utils.formatSeconds(totalTimeSeconds);
+
+      const isRunning = isTimingSelf || isAnySubtaskTiming;
+      const runningIndicator = isRunning ? `<div class="timer-indicator"></div>` : '';
+
+      const descriptionHtml = task.description ? Utils.renderMarkdown(task.description) : '';
+      const descriptionPreview = descriptionHtml ?
+          `<div class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1 prose dark:prose-invert" style="max-height: 1.25em; overflow: hidden;">${descriptionHtml}</div>`
+          : '';
+
+      const rowStyle = isRunning ? `--hover-bg: ${task.status === 'In Corso' ? '#e0f2f7' : '#e6e6fa'};` : '';
+
+      let html = `<tr class="task-row-content hover:bg-gray-50 dark:hover:bg-gray-700/50" style="${rowStyle}">
+        <td class="py-1 pl-6 pr-2 text-center w-6 col-id-exp">
+            <div class="flex items-center justify-center">
+              ${runningIndicator}
+              <button onclick="event.stopPropagation(); TasksManager.toggleExpansion(${task.id}); App.renderTasks();" title="${task.expanded ? 'Comprimi' : 'Espandi'} sub-attività" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 ${totalSubtasks === 0 ? 'opacity-0 cursor-default' : ''}" ${totalSubtasks === 0 ? 'disabled' : ''}>
+                <span class="material-icons text-base">${task.expanded ? 'expand_less' : 'expand_more'}</span>
+              </button>
+            </div>
+        </td>
+        <td class="py-1 px-3 font-medium text-gray-900 dark:text-white task-title-cell" onclick="ModalsManager.openDetailsModal(${task.id}, false)" ondblclick="event.stopPropagation(); TasksManager.enableInlineEdit(${task.id}, 'title', '${Utils.escapeHtml(task.title || '')}', this, false)">
+          <span class="text-xs text-gray-500 dark:text-gray-400 mr-2">#${task.id}</span>
+          <span class="title-text">${Utils.escapeHtml(task.title || '-')}</span>
+          ${descriptionPreview}
+          ${totalSubtasks > 0 ? `<div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-1">
+                <div class="bg-green-500 h-1.5 rounded-full progress-bar" style="width: ${subtaskProgress}%"></div>
+              </div>
+              ${completedSubtasks}/${totalSubtasks} sub-attività
+            </div>` : ''}
+        </td>
+        <td class="py-1 px-3 col-status" ondblclick="event.stopPropagation(); TasksManager.enableInlineEdit(${task.id}, 'status', '${task.status || ''}', this, false)">
+          <span class="px-2 py-1 text-xs font-medium rounded-full ${AppConfig.STATUS_COLORS[task.status] || ''}">${task.status}</span>
+        </td>
+        <td class="py-1 px-3" ondblclick="event.stopPropagation(); TasksManager.enableInlineEdit(${task.id}, 'assignee', '${task.assignee || ''}', this, false)">
+          ${Utils.escapeHtml(task.assignee || '-')}
+          ${task.owners && task.owners.length > 1 ? `<div class="text-xs text-gray-500 dark:text-gray-400">+${task.owners.length - 1} co-owners</div>` : ''}
+        </td>
+        <td class="py-1 px-3 col-priority" ondblclick="event.stopPropagation(); TasksManager.enableInlineEdit(${task.id}, 'priority', '${task.priority || ''}', this, false)">
+          ${task.priority ? `<span class="px-2 py-1 text-xs font-medium rounded-full ${AppConfig.PRIORITY_COLORS[task.priority] || ''}">${task.priority}</span>` : '-'}
+        </td>
+        <td class="py-1 px-3 col-deadline" ondblclick="event.stopPropagation(); TasksManager.enableInlineEdit(${task.id}, 'deadline', '${task.deadline || ''}', this, false)">
+          ${task.deadline ? Utils.formatDate(task.deadline) : '-'}
+        </td>
+        <td class="py-1 px-3" ondblclick="event.stopPropagation(); TasksManager.enableInlineEdit(${task.id}, 'project', '${task.project || ''}', this, false)">
+          ${Utils.escapeHtml(task.project || '-')}
+        </td>
+        <td class="py-1 px-3">
+          ${(task.tags || []).slice(0, 2).map(tag => `<span class="px-2 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 mr-1 tag">${Utils.escapeHtml(tag)}</span>`).join('')}
+          ${(task.tags || []).length > 2 ? `<span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 mr-1 tag">+${(task.tags || []).length - 2}</span>` : ''}
+          ${(task.tags || []).length === 0 ? '-' : ''}
+        </td>
+        <td class="py-1 px-3 text-gray-500 dark:text-gray-400 col-time">
+          <span id="time-display-${task.id}">${totalTimeFormatted}</span>
+          <button onclick="event.stopPropagation(); TimersManager.toggleTimer(${task.id}); App.renderTasks();" id="timer-btn-${task.id}" class="ml-1 text-base p-0 text-green-500 hover:text-green-700" title="${isRunning ? 'Ferma Timer' : 'Avvia Timer'}">
+              <span class="material-icons text-base align-middle">${isRunning ? 'pause' : 'play_arrow'}</span>
+          </button>
+        </td>
+        <td class="py-1 pr-6 pl-3 col-actions">
+          <div class="flex items-center space-x-1">
+            <button onclick="event.stopPropagation(); ModalsManager.openDetailsModal(${task.id}, false)" class="text-blue-500 hover:text-blue-700" title="Dettagli">
+              <span class="material-icons text-base">visibility</span>
+            </button>
+            <button onclick="event.stopPropagation(); ModalsManager.openAddSubtaskPrompt(${task.id})" class="text-green-500 hover:text-green-700" title="Aggiungi Sub-attività">
+              <span class="material-icons text-base">add_task</span>
+            </button>
+            <button onclick="event.stopPropagation(); TasksManager.deleteTask(${task.id}); App.renderTasks();" class="text-red-500 hover:text-red-700" title="Elimina">
+              <span class="material-icons text-base">delete</span>
+            </button>
+          </div>
+        </td>
+      </tr>
+      ${task.expanded ? RenderingManager.renderSubtaskRowRecursive(subtasksTree, task.id) : ''}
+      `;
+
+      return html;
+    },
+
+    renderSubtaskRowRecursive: (subtasks, parentId, level = 1) => {
+      if (subtasks.length === 0) return '';
+
+      const indentClass = `subtask-indent-${Math.min(level, 3)}`;
+
+      let html = '';
+      subtasks.forEach(subtask => {
+          const isTiming = TimersManager.activeSubtaskId === subtask.id && TimersManager.subtaskTimerInterval;
+          const runningIndicator = isTiming ? `<div class="timer-indicator"></div>` : '';
+          const subtaskTimeFormatted = isTiming ? Utils.formatSeconds(TimersManager.currentTaskTime) : subtask.timeSpent || '00:00:00';
+
+          const descriptionHtml = subtask.description ? Utils.renderMarkdown(subtask.description) : '';
+          const descriptionPreview = descriptionHtml ?
+              `<div class="text-xs text-gray-500 dark:text-gray-400 ml-2 line-clamp-1 prose dark:prose-invert" style="max-height: 1.25em; overflow: hidden;">${descriptionHtml}</div>`
+              : '';
+
+          const statusClass = subtask.status === 'Fatto' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800';
+          const priorityClass = subtask.priority ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600';
+
+          html += `<tr class="subtask-row-content hover:bg-gray-50 dark:hover:bg-gray-700/50">
+            <td class="py-1 pr-2 ${indentClass} col-id-exp">
+              ${runningIndicator}
+            </td>
+            <td class="py-1 pr-6 pl-0" colspan="6">
+              <div class="flex items-center space-x-2 w-full">
+                <input type="checkbox" ${subtask.completed ? 'checked' : ''}
+                       onchange="event.stopPropagation(); SubtasksManager.toggleSubtask(${subtask.id}); App.renderTasks();"
+                       class="h-4 w-4 rounded border-gray-300 text-indigo-600 dark:bg-gray-900">
+
+                <div class="flex-grow flex items-center space-x-1 cursor-pointer" onclick="event.stopPropagation(); ModalsManager.openDetailsModal(${subtask.id}, true)" ondblclick="event.stopPropagation(); TasksManager.enableInlineEdit(${subtask.id}, 'title', '${Utils.escapeHtml(subtask.title || '')}', this, true)">
+                    <span class="text-xs text-gray-500 dark:text-gray-400 mr-2">#${subtask.id}</span>
+                    <div class="title-text ${subtask.completed ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-800 dark:text-gray-50'}">${Utils.escapeHtml(subtask.title || '-')}</div>
+                    ${descriptionPreview}
+                </div>
+                <span class="px-2 py-0.5 text-xs font-medium rounded-full ${priorityClass} hidden sm:inline-block">${subtask.priority || 'Nessuna'}</span>
+                <span class="px-2 py-0.5 text-xs font-medium rounded-full ${statusClass} hidden sm:inline-block">${subtask.status || 'Da Fare'}</span>
+              </div>
+            </td>
+            <td class="py-1 px-3 text-xs text-gray-500 dark:text-gray-400">
+                ${Utils.escapeHtml(subtask.assignee || '-')}
+            </td>
+            <td class="py-1 px-3 text-xs text-gray-500 dark:text-gray-400 col-time">
+              <span id="time-display-${subtask.id}">${subtaskTimeFormatted}</span>
+              <button onclick="event.stopPropagation(); TimersManager.toggleSubtaskTimer(${subtask.id}); App.renderTasks();" id="timer-btn-${subtask.id}" data-currenttime="${Utils.parseTimeToSeconds(subtaskTimeFormatted)}" class="ml-1 text-base p-0 text-green-500 hover:text-green-700" title="${isTiming ? 'Ferma Timer' : 'Avvia Timer'}">
+                  <span class="material-icons text-base align-middle">${isTiming ? 'pause' : 'play_arrow'}</span>
+              </button>
+            </td>
+            <td class="py-1 pl-6 pr-6 col-actions">
+              <button onclick="event.stopPropagation(); SubtasksManager.deleteSubtask(${subtask.id}); App.renderTasks();" class="text-red-500 hover:text-red-700">
+                <span class="material-icons text-sm">delete</span>
+              </button>
+              <button onclick="event.stopPropagation(); ModalsManager.openDetailsModal(${subtask.id}, true)" class="text-blue-500 hover:text-blue-700" title="Modifica">
+                  <span class="material-icons text-sm">edit</span>
+              </button>
+              <button onclick="event.stopPropagation(); ModalsManager.openAddSubtaskPrompt(${subtask.id})" class="text-green-500 hover:text-green-700" title="Aggiungi Sub-attività">
+                  <span class="material-icons text-sm">add_task</span>
+              </button>
+            </td>
+          </tr>`;
+
+          if (subtask.children && subtask.children.length > 0 && subtask.expanded) {
+              html += RenderingManager.renderSubtaskRowRecursive(subtask.children, subtask.id, level + 1);
+          }
+      });
+
+      return `<tr class="subtask-parent-row">
+          <td colspan="10" class="p-0">
+              <table class="w-full text-sm">
+                  <tbody class="divide-y divide-gray-100 dark:divide-gray-700/50">
+                      ${html}
+                  </tbody>
+              </table>
+          </td>
+      </tr>`;
+    },
+
+    renderFilterCell: (header) => {
+        const inputClass = "w-full text-xs px-1 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm focus:ring-indigo-500 focus:border-indigo-500";
+
+        const currentFilterValue = document.getElementById(`filter-${header.key}`)?.value || '';
+
+        let filterInput = '';
+
+        switch(header.filterType) {
+            case 'text':
+                filterInput = `<input type="text" id="filter-${header.key}" placeholder="Cerca..." onkeyup="App.renderTasks()" class="${inputClass}" value="${Utils.escapeHtml(currentFilterValue)}" />`;
+                break;
+            case 'date':
+                filterInput = `<input type="date" id="filter-${header.key}" onchange="App.renderTasks()" class="${inputClass}" value="${Utils.escapeHtml(currentFilterValue)}" />`;
+                break;
+            case 'select':
+                const options = header.options || [];
+                const selectOptions = options.map(opt => `<option value="${Utils.escapeHtml(opt)}" ${opt.toLowerCase() === currentFilterValue.toLowerCase() ? 'selected' : ''}>${Utils.escapeHtml(opt)}</option>`).join('');
+                filterInput = `
+                    <select id="filter-${header.key}" onchange="App.renderTasks()" class="${inputClass}">
+                        <option value="">Tutti</option>
+                        ${selectOptions}
+                    </select>`;
+                break;
+            default:
+                if (header.key === 'tags') {
+                    filterInput = `<input type="text" id="filter-${header.key}" placeholder="Cerca tag..." onkeyup="App.renderTasks()" class="${inputClass}" value="${Utils.escapeHtml(currentFilterValue)}" />`;
+                } else {
+                    filterInput = '';
+                }
+        }
+
+        return `<th class="px-3 pt-1 pb-2">${filterInput}</th>`;
+    }
+  };
+
+// Modals Management Module
+const ModalsManager = {
+
+    openDetailsModal: async (itemId = null, isSubtask = false) => {
+      if (itemId === null) {
+          ModalsManager.openNewTaskModal();
+          return;
+      }
+
+      const storeName = isSubtask ? 'subtasks' : 'tasks';
+      const item = await DatabaseManager.get(storeName, itemId);
+      if (!item) return;
+
+      const subtasks = SubtasksManager.getSubtasksRecursive(item.id);
+      const allNestedSubtasks = [];
+      const flattenSubtasks = (list) => {
+          list.forEach(s => {
+              allNestedSubtasks.push(s);
+              if (s.children) flattenSubtasks(s.children);
+          });
+      };
+      flattenSubtasks(subtasks);
+      const completedSubtasks = allNestedSubtasks.filter(s => s.completed).length;
+      const totalSubtasks = allNestedSubtasks.length;
+
+      const modal = document.getElementById('details-modal');
+      document.getElementById('details-modal-title').textContent = `${isSubtask ? 'Dettagli Sub-attività' : 'Dettagli Attività'} #${item.id} ${item.title}`;
+      document.getElementById('details-item-id').value = item.id;
+      document.getElementById('details-is-subtask').value = isSubtask ? 'true' : 'false';
+
+      const projectContainer = document.getElementById('details-project-container');
+      if (projectContainer) projectContainer.style.display = isSubtask ? 'none' : 'block';
+
+      const setField = (id, value, displayFormatter = (v) => Utils.escapeHtml(v || '-'), displayOverride = null) => {
+          const el = document.getElementById(id);
+          if (el) {
+              el.dataset.value = value || '';
+              el.innerHTML = displayOverride || displayFormatter(value);
+          }
+      };
+
+      setField('details-field-title', item.title);
+      setField('details-field-status', item.status, null, `<span class="px-2 py-1 text-xs font-medium rounded-full ${AppConfig.STATUS_COLORS[item.status] || ''}">${item.status}</span>`);
+      setField('details-field-priority', item.priority, null, item.priority ? `<span class="px-2 py-1 text-xs font-medium rounded-full ${AppConfig.PRIORITY_COLORS[item.priority] || 'bg-gray-100'}">${item.priority}</span>` : '-');
+      setField('details-field-assignee', item.assignee);
+      setField('details-field-deadline', item.deadline, Utils.formatDate);
+      if (!isSubtask) setField('details-field-project', item.project);
+
+      const tagsDisplay = (item.tags || []).map(tag => `<span class="px-2 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 mr-1 tag">${Utils.escapeHtml(tag)}</span>`).join('');
+      setField('details-field-tags', (item.tags || []).join(', '), null, tagsDisplay || '-');
+
+      document.getElementById('description-textarea').value = item.description || '';
+      ModalsManager.liveMarkdownPreview(item.description);
+
+      const ownersListEl = document.getElementById('owners-list');
+      if (ownersListEl && !isSubtask) {
+          ownersListEl.innerHTML = (item.owners || []).map(owner =>
+              `<span class="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full text-sm flex items-center">
+                ${Utils.escapeHtml(owner)}
+                <button type="button" onclick="ModalsManager.removeTaskOwner(${item.id}, '${Utils.escapeHtml(owner)}')" class="ml-2 text-red-600 hover:text-red-800">×</button>
+              </span>`
+          ).join('');
+          document.getElementById('details-owners-section').style.display = 'block';
+      } else if (document.getElementById('details-owners-section')) {
+          document.getElementById('details-owners-section').style.display = 'none';
+      }
+
+      const notesListEl = document.getElementById('notes-list');
+      if (notesListEl) {
+          if (item.notes && item.notes.length > 0) {
+              notesListEl.innerHTML = item.notes.map(note => `
+                  <div class="p-3 bg-gray-100 dark:bg-gray-900 rounded-lg border-l-4 border-indigo-500">
+                      <div class="flex justify-between items-start mb-2">
+                          <span class="text-xs text-gray-500 dark:text-gray-400">${Utils.formatDate(note.timestamp)} - ${Utils.escapeHtml(note.author || 'Utente')}</span>
+                      </div>
+                      <div class="text-sm prose dark:prose-invert max-w-none">${Utils.renderMarkdown(note.text)}</div>
+                  </div>
+              `).join('');
+          } else {
+              notesListEl.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">Nessuna nota disponibile.</p>';
+          }
+      }
+
+      const subtasksSectionEl = document.getElementById('details-subtasks-section');
+      if (totalSubtasks > 0) {
+          subtasksSectionEl.innerHTML = `<div class="border-t pt-4">
+            <h3 class="font-semibold mb-3 flex items-center"><span class="material-icons text-base mr-2">checklist</span> Sub-attività Annidate (${completedSubtasks}/${totalSubtasks})</h3>
+            <div class="space-y-2 max-h-64 overflow-y-auto">
+              ${allNestedSubtasks.map(st => `
+                <div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-900 rounded">
+                  <div class="flex items-center space-x-2">
+                      <input type="checkbox" ${st.completed ? 'checked' : ''} onchange="SubtasksManager.toggleSubtask(${st.id}); ModalsManager.openDetailsModal(${itemId}, ${isSubtask});" class="h-4 w-4">
+                      <span class="${st.completed ? 'line-through text-gray-500' : ''}">#${st.id} ${Utils.escapeHtml(st.title)}</span>
+                  </div>
+                  <div class="flex items-center space-x-2 text-xs">
+                      <span class="text-gray-500">T: ${st.timeSpent || '00:00:00'}</span>
+                      <button type="button" onclick="event.stopPropagation(); ModalsManager.openDetailsModal(${st.id}, true)" class="text-blue-500 hover:text-blue-700" title="Modifica Dettagli">
+                          <span class="material-icons text-base">edit</span>
+                      </button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+             <button type="button" onclick="event.stopPropagation(); ModalsManager.openAddSubtaskPrompt(${item.id})" class="mt-4 px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600">
+                  Aggiungi Sub-task
+              </button>
+          </div>`;
+      } else {
+          subtasksSectionEl.innerHTML = `<div class="border-t pt-4"><button type="button" onclick="event.stopPropagation(); ModalsManager.openAddSubtaskPrompt(${item.id})" class="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600">
+              Aggiungi la prima Sub-attività
+          </button></div>`;
+      }
+
+      modal.classList.add('active');
+    },
+
+    openNewTaskModal: () => {
+      const modal = document.getElementById('details-modal');
+      document.getElementById('details-modal-title').textContent = 'Nuova Attività';
+      document.getElementById('details-item-id').value = '';
+      document.getElementById('details-is-subtask').value = 'false';
+
+      document.getElementById('details-field-title').textContent = 'Inserisci Titolo';
+      document.getElementById('details-field-title').dataset.value = '';
+
+      document.getElementById('description-textarea').value = '';
+      ModalsManager.liveMarkdownPreview('');
+
+      const clearFields = ['details-field-status', 'details-field-priority', 'details-field-assignee', 'details-field-deadline', 'details-field-project', 'details-field-tags'];
+      clearFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.dataset.value = '';
+          el.innerHTML = '-';
+        }
+      });
+
+      if (App.config.groupBy === 'project' && ProjectsManager.projects.length > 0) {
+        const defaultProject = ProjectsManager.projects[0].name;
+        document.getElementById('details-field-project').dataset.value = defaultProject;
+        document.getElementById('details-field-project').textContent = defaultProject;
+      }
+
+      document.getElementById('owners-list').innerHTML = '-';
+      document.getElementById('notes-list').innerHTML = '-';
+      document.getElementById('details-subtasks-section').innerHTML = '';
+
+      modal.classList.add('active');
+    },
+
+    closeDetailsModal: () => {
+      const modal = document.getElementById('details-modal');
+      if (modal) modal.classList.remove('active');
+    },
+
+    saveDetails: async (event) => {
+        event.preventDefault();
+
+        const itemIdStr = document.getElementById('details-item-id').value;
+        const isSubtask = document.getElementById('details-is-subtask').value === 'true';
+
+        let item = null;
+        let storeName;
+        let isNewTask = itemIdStr === '';
+
+        if (isNewTask) {
+            storeName = 'tasks';
+            item = {
+                createdAt: new Date().toISOString(),
+                owners: [],
+                notes: [],
+                timeSpent: '00:00:00',
+                status: 'Da Fare',
+                completed: false,
+                tags: []
+            };
+        } else {
+            storeName = isSubtask ? 'subtasks' : 'tasks';
+            item = await DatabaseManager.get(storeName, parseInt(itemIdStr));
+        }
+
+        if (!item) {
+            Utils.showNotification('Errore: Impossibile trovare l\'elemento da salvare.', 'danger');
+            return;
+        }
+
+        const titleEl = document.getElementById('details-field-title');
+        const statusEl = document.getElementById('details-field-status');
+        const priorityEl = document.getElementById('details-field-priority');
+        const assigneeEl = document.getElementById('details-field-assignee');
+        const deadlineEl = document.getElementById('details-field-deadline');
+        const projectEl = document.getElementById('details-field-project');
+        const tagsEl = document.getElementById('details-field-tags');
+        const descriptionTextarea = document.getElementById('description-textarea');
+
+        item.title = titleEl ? titleEl.textContent.trim() || 'Attività Senza Titolo' : item.title;
+        item.status = statusEl ? statusEl.dataset.value || item.status : item.status;
+        item.priority = priorityEl ? priorityEl.dataset.value || '' : item.priority || '';
+        item.assignee = assigneeEl ? assigneeEl.dataset.value || '' : item.assignee || '';
+        item.deadline = deadlineEl ? deadlineEl.dataset.value || '' : item.deadline || '';
+
+        if (!isSubtask) {
+            item.project = projectEl ? projectEl.dataset.value || '' : item.project || '';
+        }
+
+        item.tags = tagsEl ? (tagsEl.dataset.value || '').split(',').map(t => t.trim()).filter(t => t) : item.tags || [];
+
+        const newDescription = descriptionTextarea ? descriptionTextarea.value : item.description;
+        item.description = newDescription;
+
+        item.completed = (item.status === 'Fatto');
+        item.updatedAt = new Date().toISOString();
+
+        const { tags: extractedTags, owners: extractedOwners } = Utils.extractTagsAndOwners(newDescription);
+
+        const uniqueTags = new Set([...(item.tags || []), ...extractedTags]);
+        item.tags = Array.from(uniqueTags);
+
+        if (!isSubtask) {
+            const existingOwners = item.owners || [];
+            const uniqueOwners = new Set([...existingOwners, ...extractedOwners]);
+            item.owners = Array.from(uniqueOwners);
+        }
+
+        try {
+            if (isNewTask) {
+                const newId = await TasksManager.createTask(item);
+                Utils.showNotification(`Attività #${newId} creata!`, 'success');
+            } else {
+                if (isSubtask) {
+                    await SubtasksManager.updateSubtask(item);
+                } else {
+                    await TasksManager.updateTask(item);
+                }
+                Utils.showNotification(`Dettagli ${isSubtask ? 'Sub-attività' : 'Attività'} #${item.id} aggiornati!`, 'success');
+            }
+
+            ModalsManager.closeDetailsModal();
+            App.renderTasks();
+            ViewsManager.updateSummaryStats();
+        } catch (error) {
+            console.error('Error saving details:', error);
+            Utils.showNotification('Errore nel salvataggio dei dettagli', 'danger');
+        }
+    },
+
+    liveMarkdownPreview: (text) => {
+        const previewEl = document.getElementById('markdown-preview');
+        if (previewEl) {
+            previewEl.innerHTML = Utils.renderMarkdown(text);
+            if (text.trim() === '') {
+                previewEl.textContent = 'Anteprima descrizione vuota.';
+            }
+        }
+    },
+
+    addNoteFromInput: async (itemId, isSubtask) => {
+      const input = document.getElementById('new-note-input');
+      if (!input || !input.value.trim()) return;
+
+      const storeName = isSubtask ? 'subtasks' : 'tasks';
+      let item = await DatabaseManager.get(storeName, itemId);
+
+      if (item) {
+          const noteText = input.value.trim();
+
+          if (!item.notes) item.notes = [];
+
+          item.notes.push({
+              id: Date.now(),
+              text: noteText,
+              timestamp: new Date().toISOString(),
+              author: 'Utente'
+          });
+
+          const { tags: extractedTags, owners: extractedOwners } = Utils.extractTagsAndOwners(noteText);
+
+          const uniqueTags = new Set([...(item.tags || []), ...extractedTags]);
+          item.tags = Array.from(uniqueTags);
+
+          if (!isSubtask) {
+              const existingOwners = item.owners || [];
+              const uniqueOwners = new Set([...existingOwners, ...extractedOwners]);
+              item.owners = Array.from(uniqueOwners);
+          }
+
+          item.updatedAt = new Date().toISOString();
+          await DatabaseManager.update(storeName, item);
+
+          Utils.showNotification('Nota e Tags/Owners aggiunti!', 'success');
+          input.value = '';
+          ModalsManager.openDetailsModal(itemId, isSubtask);
+      }
+    },
+
+    removeTaskOwner: async (taskId, owner) => {
+      const task = await DatabaseManager.get('tasks', taskId);
+      if (task && task.owners) {
+        task.owners = task.owners.filter(o => o !== owner);
+        await TasksManager.updateTask(task);
+        Utils.showNotification('Owner rimosso', 'success');
+        ModalsManager.openDetailsModal(taskId, false);
+      }
+    },
+
+    addOwnerPrompt: async (taskId) => {
+      const owner = prompt('Inserisci il nome del nuovo owner:');
+      if (owner && owner.trim()) {
+        const task = await DatabaseManager.get('tasks', taskId);
+        if (task) {
+          if (!task.owners) task.owners = [];
+          if (!task.owners.includes(owner.trim())) {
+            task.owners.push(owner.trim());
+            await TasksManager.updateTask(task);
+            ModalsManager.openDetailsModal(taskId, false);
+            Utils.showNotification('Owner aggiunto', 'success');
+          }
+        }
+      }
+    },
+
+    openAddSubtaskPrompt: (parentId) => {
+      const title = prompt('Inserisci il titolo della sub-attività:');
+      if (title && title.trim()) {
+        SubtasksManager.addSubtask(parentId, { title: title.trim() }).then(() => {
+          App.renderTasks();
+        });
+      }
+    },
+
+    // Project Modal
+    openProjectModal: async (projectId = null) => {
+      const modal = document.getElementById('project-modal');
+      const form = document.getElementById('project-form');
+
+      form.reset();
+
+      if (projectId) {
+        const project = await DatabaseManager.get('projects', projectId);
+        if (project) {
+          document.getElementById('project-id').value = project.id;
+          document.getElementById('project-name').value = project.name;
+          document.getElementById('project-description').value = project.description || '';
+          document.getElementById('project-manager').value = project.manager || '';
+          document.getElementById('project-start').value = project.startDate || '';
+          document.getElementById('project-end').value = project.endDate || '';
+          document.getElementById('project-status').value = project.status || 'Attivo';
+        }
+      }
+
+      modal.classList.add('active');
+    },
+
+    closeProjectModal: () => {
+      document.getElementById('project-modal').classList.remove('active');
+    },
+
+    saveProject: async (event) => {
+      event.preventDefault();
+
+      const projectId = document.getElementById('project-id').value;
+      const projectData = {
+        name: document.getElementById('project-name').value,
+        description: document.getElementById('project-description').value,
+        manager: document.getElementById('project-manager').value,
+        startDate: document.getElementById('project-start').value,
+        endDate: document.getElementById('project-end').value,
+        status: document.getElementById('project-status').value
+      };
+
+      try {
+        if (projectId) {
+          projectData.id = parseInt(projectId);
+          await ProjectsManager.updateProject(projectData);
+        } else {
+          await ProjectsManager.createProject(projectData);
+        }
+
+        ModalsManager.closeProjectModal();
+        ViewsManager.renderProjects();
+      } catch (error) {
+        console.error('Error saving project:', error);
+        Utils.showNotification('Errore nel salvataggio del progetto', 'danger');
+      }
+    },
+
+    // Config Modal
+    openFieldConfig: () => {
+      const modal = document.getElementById('field-config-modal');
+      ModalsManager.renderColumnConfig();
+      ModalsManager.renderCustomFieldsConfig();
+      ModalsManager.renderFieldDomainsConfig();
+      modal.classList.add('active');
+    },
+
+    closeFieldConfig: () => {
+      document.getElementById('field-config-modal').classList.remove('active');
+    },
+
+    renderColumnConfig: () => {
+      const container = document.getElementById('columns-config');
+      const columns = [
+        { name: 'Titolo', key: 'title', visible: true, locked: true },
+        { name: 'Stato', key: 'status', visible: true, locked: true },
+        { name: 'Responsabile', key: 'assignee', visible: true },
+        { name: 'Priorità', key: 'priority', visible: true },
+        { name: 'Scadenza', key: 'deadline', visible: true },
+        { name: 'Progetto', key: 'project', visible: true },
+        { name: 'Tag', key: 'tags', visible: true },
+        { name: 'Tempo', key: 'time', visible: true }
+      ];
+
+      let html = '';
+      columns.forEach(col => {
+        html += `<div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center space-x-3">
+            <span class="material-icons text-gray-500 dark:text-gray-400 cursor-move text-base">drag_indicator</span>
+            <span class="font-medium">${col.name}</span>
+            ${col.locked ? '<span class="text-xs text-gray-500 dark:text-gray-400">(obbligatorio)</span>' : ''}
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" ${col.visible ? 'checked' : ''} ${col.locked ? 'disabled' : ''} class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+          </label>
+        </div>`;
+      });
+
+      container.innerHTML = html;
+    },
+
+    renderCustomFieldsConfig: () => {
+      const container = document.getElementById('custom-fields-config');
+      container.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">Funzionalità campi personalizzati in sviluppo.</p>';
+    },
+
+    renderFieldDomainsConfig: () => {
+      const container = document.getElementById('field-domains-container');
+      container.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">Funzionalità domini dropdown in sviluppo.</p>';
+    }
+  };
+
+// Views Management Module
+const ViewsManager = {
+
+    showView: (viewName) => {
+      const views = ['tasks', 'summary', 'projects', 'history'];
+      views.forEach(view => {
+        const el = document.getElementById(`view-${view}`);
+        const btn = document.getElementById(`btn-${view}`);
+        if (el) el.style.display = view === viewName ? 'block' : 'none';
+        if (btn) {
+          if (view === viewName) {
+            btn.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'shadow-sm');
+            btn.classList.remove('text-gray-500', 'dark:text-gray-400');
+          } else {
+            btn.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'shadow-sm');
+            btn.classList.add('text-gray-500', 'dark:text-gray-400');
+          }
+        }
+      });
+
+      if (viewName === 'summary') {
+        ViewsManager.updateSummaryStats();
+      } else if (viewName === 'projects') {
+        ViewsManager.renderProjects();
+      } else if (viewName === 'history') {
+        ViewsManager.renderHistory();
+      }
+    },
+
+    updateSummaryStats: () => {
+      const completed = TasksManager.tasks.filter(t => t.status === 'Fatto').length;
+      const inProgress = TasksManager.tasks.filter(t => t.status === 'In Corso').length;
+
+      const now = new Date();
+      const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const upcoming = TasksManager.tasks.filter(t => t.deadline && new Date(t.deadline) <= sevenDaysFromNow && new Date(t.deadline) >= now && t.status !== 'Fatto').length;
+      const overdue = TasksManager.tasks.filter(t => t.deadline && new Date(t.deadline) < now && t.status !== 'Fatto').length;
+
+      document.getElementById('stat-complete').textContent = completed;
+      document.getElementById('stat-inprogress').textContent = inProgress;
+      document.getElementById('stat-upcoming').textContent = upcoming;
+      document.getElementById('stat-overdue').textContent = overdue;
+
+      const priorityCounts = {
+        'Urgente': TasksManager.tasks.filter(t => t.priority === 'Urgente' && t.status !== 'Fatto').length,
+        'Alta': TasksManager.tasks.filter(t => t.priority === 'Alta' && t.status !== 'Fatto').length,
+        'Media': TasksManager.tasks.filter(t => t.priority === 'Media' && t.status !== 'Fatto').length,
+        'Bassa': TasksManager.tasks.filter(t => t.priority === 'Bassa' && t.status !== 'Fatto').length
+      };
+
+      const priorityChartEl = document.getElementById('priority-chart');
+      if (priorityChartEl) {
+        new Chart(priorityChartEl, {
+          type: 'doughnut',
+          data: {
+            labels: Object.keys(priorityCounts),
+            datasets: [{
+              data: Object.values(priorityCounts),
+              backgroundColor: ['#EF4444', '#F97316', '#FBBF24', '#84CC16'],
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'top',
+              },
+            }
+          }
+        });
+      }
+
+      const statusCounts = {
+        'Da Fare': TasksManager.tasks.filter(t => t.status === 'Da Fare').length,
+        'In Corso': TasksManager.tasks.filter(t => t.status === 'In Corso').length,
+        'In Revisione': TasksManager.tasks.filter(t => t.status === 'In Revisione').length,
+        'Fatto': TasksManager.tasks.filter(t => t.status === 'Fatto').length,
+        'Bloccato': TasksManager.tasks.filter(t => t.status === 'Bloccato').length,
+        'In Attesa': TasksManager.tasks.filter(t => t.status === 'In Attesa').length,
+      };
+
+      const statusChartEl = document.getElementById('status-chart');
+      if (statusChartEl) {
+        new Chart(statusChartEl, {
+          type: 'doughnut',
+          data: {
+            labels: Object.keys(statusCounts),
+            datasets: [{
+              data: Object.values(statusCounts),
+              backgroundColor: ['#6B7280', '#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'],
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'top',
+              },
+            }
+          }
+        });
+      }
+
+      const assignees = {};
+      TasksManager.tasks.forEach(task => {
+        const assignee = task.assignee || 'Non assegnato';
+        if (!assignees[assignee]) {
+          assignees[assignee] = { total: 0, completed: 0 };
+        }
+        assignees[assignee].total++;
+        if (task.status === 'Fatto') {
+          assignees[assignee].completed++;
+        }
+      });
+
+      const assigneeTableEl = document.getElementById('assignee-table');
+      if (assigneeTableEl) {
+        let tableHtml = '<table class="w-full text-sm"><thead><tr><th class="text-left py-2">Responsabile</th><th class="text-right py-2">Totale</th><th class="text-right py-2">Completate</th></tr></thead><tbody>';
+        Object.entries(assignees).forEach(([assignee, stats]) => {
+          tableHtml += `
+            <tr class="border-t border-gray-200 dark:border-gray-700">
+              <td class="py-2">${Utils.escapeHtml(assignee)}</td>
+              <td class="text-right">${stats.total}</td>
+              <td class="text-right">${stats.completed}</td>
+            </tr>
+          `;
+        });
+        tableHtml += '</tbody></table>';
+        assigneeTableEl.innerHTML = tableHtml;
+      }
+    },
+
+    updateDeadlines: () => {
+      const now = new Date();
+      const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+      const upcoming = TasksManager.tasks.filter(t =>
+        t.deadline &&
+        new Date(t.deadline) <= sevenDaysFromNow &&
+        new Date(t.deadline) >= now &&
+        t.status !== 'Fatto'
+      ).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+      const overdue = TasksManager.tasks.filter(t =>
+        t.deadline &&
+        new Date(t.deadline) < now &&
+        t.status !== 'Fatto'
+      ).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+      const upcomingEl = document.getElementById('upcoming-deadlines');
+      const overdueEl = document.getElementById('overdue-tasks');
+
+      if (upcomingEl) {
+        if (upcoming.length === 0) {
+          upcomingEl.innerHTML = '<li class="text-sm text-gray-500 dark:text-gray-400">Nessuna scadenza imminente</li>';
+        } else {
+          upcomingEl.innerHTML = upcoming.map(task => `
+            <li class="border-l-4 border-yellow-500 pl-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded" onclick="ModalsManager.openDetailsModal(${task.id}, false)">
+              <div class="font-medium">${Utils.escapeHtml(task.title)}</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">Scadenza: ${Utils.formatDate(task.deadline)}</div>
+            </li>
+          `).join('');
+        }
+      }
+
+      if (overdueEl) {
+        if (overdue.length === 0) {
+          overdueEl.innerHTML = '<li class="text-sm text-gray-500 dark:text-gray-400">Nessuna attività scaduta</li>';
+        } else {
+          overdueEl.innerHTML = overdue.map(task => `
+            <li class="border-l-4 border-red-500 pl-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded" onclick="ModalsManager.openDetailsModal(${task.id}, false)">
+              <div class="font-medium">${Utils.escapeHtml(task.title)}</div>
+              <div class="text-sm text-red-500">Scaduta il: ${Utils.formatDate(task.deadline)}</div>
+            </li>
+          `).join('');
+        }
+      }
+    },
+
+    renderProjects: () => {
+      const container = document.getElementById('projects-container');
+      const sortValue = document.getElementById('project-sort-select')?.value || 'name-asc';
+
+      if (ProjectsManager.projects.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-8">Nessun progetto disponibile. Crea il tuo primo progetto!</p>';
+        return;
+      }
+
+      let sortedProjects = [...ProjectsManager.projects];
+      const [sortBy, sortDir] = sortValue.split('-');
+
+      sortedProjects.sort((a, b) => {
+        let valA, valB;
+        if (sortBy === 'progress') {
+          valA = ProjectsManager.getProjectProgress(a.name);
+          valB = ProjectsManager.getProjectProgress(b.name);
+        } else {
+          valA = a[sortBy];
+          valB = b[sortBy];
+        }
+
+        if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+        if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+
+      let html = '<table class="w-full text-sm"><thead class="text-xs text-gray-500 dark:text-gray-400 uppercase"><tr>';
+      html += '<th class="py-2 px-3 text-left">Nome Progetto</th>';
+      html += '<th class="py-2 px-3 text-left">Project Manager</th>';
+      html += '<th class="py-2 px-3 text-left">Stato</th>';
+      html += '<th class="py-2 px-3 text-left">Date</th>';
+      html += '<th class="py-2 px-3 text-right">Azioni</th>';
+      html += '</tr></thead><tbody>';
+
+      sortedProjects.forEach(project => {
+        const statusColors = {
+          'Attivo': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+          'In Pausa': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+          'Completato': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+        };
+
+        const progress = ProjectsManager.getProjectProgress(project.name);
+        const projectTasks = ProjectsManager.getProjectTasks(project.name);
+        const taskCount = projectTasks.length;
+        const completedCount = projectTasks.filter(t => t.status === 'Fatto').length;
+
+        html += `<tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+          <td class="py-1 px-3">
+            <div class="font-medium">${Utils.escapeHtml(project.name)}</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">${taskCount} attività (${completedCount} completate)</div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-2">
+              <div class="bg-indigo-500 h-1.5 rounded-full progress-bar" style="width: ${progress}%"></div>
+            </div>
+          </td>
+          <td class="py-1 px-3">${Utils.escapeHtml(project.manager) || '-'}</td>
+          <td class="py-1 px-3">
+            <span class="px-2 py-1 text-xs font-medium rounded-full ${statusColors[project.status] || ''}">${project.status}</span>
+          </td>
+          <td class="py-1 px-3">
+            <div class="text-xs">${project.startDate ? Utils.formatDate(project.startDate) : '-'} - ${project.endDate ? Utils.formatDate(project.endDate) : '-'}</div>
+          </td>
+          <td class="py-1 px-3 text-right">
+            <button onclick="ModalsManager.openProjectModal(${project.id})" class="text-blue-500 hover:text-blue-700 mr-2">
+              <span class="material-icons text-base">edit</span>
+            </button>
+            <button onclick="ProjectsManager.deleteProject(${project.id}); ViewsManager.renderProjects();" class="text-red-500 hover:text-red-700">
+              <span class="material-icons text-base">delete</span>
+            </button>
+          </td>
+        </tr>`;
+      });
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    },
+
+    renderHistory: async () => {
+      const container = document.getElementById('history-container');
+      const searchInput = document.getElementById('history-search-input')?.value.toLowerCase() || '';
+
+      if (HistoryManager.historyLog.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-8">Nessuna modifica registrata.</p>';
+        return;
+      }
+
+      let logs = [...HistoryManager.historyLog].sort((a, b) => new Date(b.timestamp) - new date(b.timestamp));
+
+      if (searchInput) {
+        logs = logs.filter(log => {
+          const searchTerm = searchInput.toLowerCase();
+          return (
+            log.action.toLowerCase().includes(searchTerm) ||
+            log.itemType.toLowerCase().includes(searchTerm) ||
+            log.itemTitle.toLowerCase().includes(searchTerm) ||
+            Object.values(log.changes).some(change =>
+              (change.oldValue?.toString().toLowerCase() || '').includes(searchTerm) ||
+              (change.newValue?.toString().toLowerCase() || '').includes(searchTerm)
+            )
+          );
+        });
+      }
+
+      if (logs.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-8">Nessun risultato per la ricerca.</p>';
+        return;
+      }
+
+      let html = '<div class="space-y-4">';
+      logs.forEach(log => {
+        const changesHtml = Object.entries(log.changes).map(([field, change]) => {
+          if (change.oldValue !== undefined) {
+            return `<li><strong>${field}:</strong> ${Utils.escapeHtml(change.oldValue || '-')} → ${Utils.escapeHtml(change.newValue || '-')}</li>`;
+          } else {
+            return `<li><strong>${field}:</strong> ${Utils.escapeHtml(change.newValue || '-')}</li>`;
+          }
+        }).join('');
+
+        html += `
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div class="flex justify-between items-start mb-2">
+              <div>
+                <span class="font-semibold">${log.action}</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400"> - ${log.itemType} #${log.itemId}</span>
+              </div>
+              <span class="text-xs text-gray-500 dark:text-gray-400">${Utils.formatDate(log.timestamp)}</span>
+            </div>
+            <div class="text-sm mb-2">${Utils.escapeHtml(log.itemTitle)}</div>
+            <ul class="text-xs text-gray-600 dark:text-gray-400 list-disc list-inside">${changesHtml}</ul>
+          </div>
+        `;
+      });
+      html += '</div>';
+
+      container.innerHTML = html;
+    }
+  };
+
+// Main Application Module
+const App = {
+    config: { ...AppConfig.DEFAULT_CONFIG },
+
+    initialize: async () => {
+      try {
+        await DatabaseManager.init();
+
+        const configs = await DatabaseManager.getAll('config');
+        configs.forEach(conf => {
+            App.config[conf.key] = conf.value;
+        });
+
+        await App.loadAllData();
+        App.applyConfig();
+        App.setupEventListeners();
+        App.renderTasks();
+        ViewsManager.updateSummaryStats();
+        ViewsManager.updateDeadlines();
+
+        if (localStorage.getItem('darkMode') === 'true') {
+          document.documentElement.classList.add('dark');
+        }
+
+        console.log('✅ App inizializzata con successo!');
+        App.runInternalTests();
+
+      } catch (error) {
+        console.error('❌ Errore di inizializzazione:', error);
+        Utils.showNotification('Errore di inizializzazione', 'danger');
+      }
+    },
+
+    loadAllData: async () => {
+      await TasksManager.loadTasks();
+      await SubtasksManager.loadSubtasks();
+      await ProjectsManager.loadProjects();
+      await HistoryManager.loadHistory();
+
+      const domains = await DatabaseManager.getAll('fieldDomains');
+      if (domains.length === 0) {
+        for (const [name, values] of Object.entries(AppConfig.FIELD_DOMAINS)) {
+          await DatabaseManager.add('fieldDomains', { name, values });
+        }
+      }
+    },
+
+    applyConfig: () => {
+        const { fontFamily, fontSize, groupBy } = App.config;
+
+        const fontMap = {
+            'Inter': 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            'Roboto': 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif',
+            'Source Code Pro': '"Source Code Pro", Consolas, monospace',
+            'Inconsolata': 'Inconsolata, Consolas, monospace',
+        };
+        document.body.style.setProperty('--app-font-family', fontMap[fontFamily] || fontMap['Inter']);
+
+        const sizeMap = {
+            'small': '0.875rem',
+            'medium': '1rem',
+            'large': '1.125rem'
+        };
+        document.body.style.setProperty('--app-font-size-base', sizeMap[fontSize] || sizeMap['medium']);
+        document.body.style.setProperty('--app-font-size-table', fontSize === 'small' ? '0.75rem' : '0.875rem');
+
+        if (groupBy) {
+            TasksManager.currentGroupBy = groupBy;
+            const labelEl = document.getElementById('current-group-label');
+            if (labelEl) labelEl.textContent = TasksManager.getGroupByLabel();
+        }
+
+        const fontSelect = document.getElementById('config-font-family');
+        if (fontSelect) fontSelect.value = fontFamily || 'Inter';
+
+        const sizeSelect = document.getElementById('config-font-size');
+        if (sizeSelect) sizeSelect.value = fontSize || 'medium';
+    },
+
+    saveConfig: async (key, value) => {
+        App.config[key] = value;
+        await DatabaseManager.update('config', { key, value });
+        App.applyConfig();
+        Utils.showNotification(`Configurazione ${key} salvata`, 'info');
+    },
+
+    setupEventListeners: () => {
+      document.addEventListener('click', (e) => {
+        const menu = document.getElementById('group-menu');
+        const btn = e.target.closest('button');
+        if (menu && !menu.contains(e.target) && (!btn || !btn.onclick || btn.onclick.toString().indexOf('toggleGroupMenu') === -1)) {
+          menu.classList.add('hidden');
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+          e.preventDefault();
+          ModalsManager.openNewTaskModal();
+        }
+
+        if (e.key === 'Escape') {
+          ModalsManager.closeDetailsModal();
+          ModalsManager.closeProjectModal();
+          ModalsManager.closeFieldConfig();
+          TasksManager.cancelInlineEdit();
+        }
+      });
+
+      window.addEventListener('beforeunload', (e) => {
+        if (TimersManager.timerInterval || TimersManager.activeSubtaskId) {
+          e.preventDefault();
+          e.returnValue = '';
+          return 'Hai un timer attivo. Sei sicuro di voler uscire?';
+        }
+      });
+    },
+
+    renderTasks: async () => {
+      const container = document.getElementById('tasks-container');
+      const searchInput = document.getElementById('search-input')?.value.toLowerCase() || '';
+
+      const filterInputs = {
+          title: document.getElementById('filter-title')?.value.toLowerCase(),
+          status: document.getElementById('filter-status')?.value.toLowerCase(),
+          assignee: document.getElementById('filter-assignee')?.value.toLowerCase(),
+          priority: document.getElementById('filter-priority')?.value.toLowerCase(),
+          deadline: document.getElementById('filter-deadline')?.value,
+          project: document.getElementById('filter-project')?.value.toLowerCase(),
+          tags: document.getElementById('filter-tags')?.value.toLowerCase(),
+      };
+
+      const filteredTasks = TasksManager.filterTasks(searchInput, filterInputs);
+
+      const tasksPerPage = App.config.tasksPerPage;
+      const totalTasks = filteredTasks.length;
+      const totalPages = Math.ceil(totalTasks / tasksPerPage);
+
+      if (TasksManager.currentPage > totalPages && totalPages > 0) {
+          TasksManager.currentPage = totalPages;
+      } else if (totalPages === 0) {
+          TasksManager.currentPage = 1;
+      }
+
+      const startIndex = (TasksManager.currentPage - 1) * tasksPerPage;
+      const paginatedTasks = filteredTasks.slice(startIndex, startIndex + tasksPerPage);
+
+      const groupedTasks = TasksManager.groupTasks(paginatedTasks);
+
+      let sortedGroupKeys = Object.keys(groupedTasks);
+      if (TasksManager.currentGroupBy === 'priority') {
+          sortedGroupKeys.sort((a, b) => AppConfig.PRIORITY_ORDER[b] - AppConfig.PRIORITY_ORDER[a]);
+      } else {
+          sortedGroupKeys.sort((a, b) => a.localeCompare(b));
+      }
+
+      if (paginatedTasks.length > 0) {
+          let contentHtml = '';
+
+          for (const groupKey of sortedGroupKeys) {
+              const tasksInGroup = TasksManager.sortTasks(groupedTasks[groupKey]);
+
+              contentHtml += `<div class="mb-6">
+ <h3 class="text-lg font-semibold mb-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-md">${groupKey} (${tasksInGroup.length})</h3>
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                        ${(await Promise.all(tasksInGroup.map(async task => RenderingManager.renderTaskRow(task)))).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+        }
+
+        container.innerHTML = contentHtml;
+    } else {
+        const isFilterActive = searchInput || Object.values(filterInputs).some(f => f);
+
+        if (isFilterActive) {
+             const emptyStateHtml = `
+                <div class="empty-state pt-16 pb-8">
+                    <span class="material-icons">search_off</span>
+                    <p>Nessuna attività corrisponde ai criteri di filtro/ricerca. Prova a modificare i filtri.</p>
+                </div>`;
+            container.innerHTML = emptyStateHtml;
+        } else {
+            container.innerHTML = '<div class="empty-state"><span class="material-icons">task_alt</span><p>Nessuna attività trovata. Prova a creare una nuova attività.</p></div>';
+        }
+    }
+
+    App.updatePaginationControls(TasksManager.currentPage, totalPages, totalTasks);
+  },
+
+  updatePaginationControls: (currentPage, totalPages, totalTasks) => {
+    const infoEl = document.getElementById('pagination-info');
+    const prevBtn = document.getElementById('prev-page-btn');
+    const nextBtn = document.getElementById('next-page-btn');
+
+    if (infoEl) infoEl.textContent = `Pagina ${currentPage} di ${totalPages} (${totalTasks} attività totali)`;
+    if (prevBtn) prevBtn.disabled = currentPage <= 1;
+    if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+  },
+
+  changePage: (direction) => {
+    TasksManager.currentPage += direction;
+    App.renderTasks();
+  },
+
+  clearColumnFilters: () => {
+    const filterIds = ['filter-title', 'filter-status', 'filter-assignee', 'filter-priority', 'filter-deadline', 'filter-project', 'filter-tags'];
+    filterIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    App.renderTasks();
+    Utils.showNotification('Filtri azzerati', 'info');
+  },
+
+  toggleGroupMenu: () => {
+    const menu = document.getElementById('group-menu');
+    if (menu) menu.classList.toggle('hidden');
+  },
+
+  setGroupBy: (groupBy) => {
+    TasksManager.currentGroupBy = groupBy;
+    App.saveConfig('groupBy', groupBy);
+    const labelEl = document.getElementById('current-group-label');
+    if (labelEl) labelEl.textContent = TasksManager.getGroupByLabel();
+    const menu = document.getElementById('group-menu');
+    if (menu) menu.classList.add('hidden');
+    App.renderTasks();
+    Utils.showNotification(`Raggruppamento: ${TasksManager.getGroupByLabel()}`, 'info');
+  },
+
+  toggleDarkMode: () => {
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+  },
+
+  runInternalTests: () => {
+      const results = {};
+
+      results.ProjectManagement = { status: 'OK', message: 'Project loading/rendering seems functional.' };
+      try {
+          if (ProjectsManager.projects.length > 0) {
+            const tempProject = ProjectsManager.projects[0].name;
+            const tasksInProject = TasksManager.tasks.filter(t => t.project === tempProject).length;
+            if (tasksInProject === 0 && TasksManager.tasks.length > 0) {
+                 results.ProjectManagement.message = 'Warning: Projects loaded, but no tasks linked. Check data integrity.';
+            }
+          }
+      } catch (e) {
+          results.ProjectManagement = { status: 'FAIL', message: `Project test error: ${e.message}` };
+      }
+
+      results.SubtaskRecursion = { status: 'OK', message: `Max recursion depth set to ${AppConfig.MAX_RECURSION_DEPTH}` };
+      try {
+          const testSubtasks = SubtasksManager.getSubtasksRecursive(TasksManager.tasks[0]?.id || -1, 0, 4);
+          if (testSubtasks.length > 0 && testSubtasks[0].children && testSubtasks[0].children.length > 0) {
+              results.SubtaskRecursion.message += ', Nested structure detected and handled.';
+          }
+      } catch (e) {
+          results.SubtaskRecursion = { status: 'FAIL', message: `Recursion test FAIL (Possible recursion cycle detected)` };
+      }
+
+      results.TimerInteraction = { status: 'OK', message: 'Timer logic methods are available.' };
+      if (!TimersManager.toggleTimer || !TimersManager.toggleSubtaskTimer) {
+          results.TimerInteraction = { status: 'FAIL', message: 'Timer functions missing!' };
+      }
+
+      const testText = "Task for #[Frontend] review with @[John Doe]";
+      const extraction = Utils.extractTagsAndOwners(testText);
+      if (extraction.tags.includes('Frontend') && extraction.owners.includes('John Doe')) {
+          results.AutoTagging = { status: 'OK', message: `Extraction successful. Tags: ${extraction.tags.join(', ')}, Owners: ${extraction.owners.join(', ')}` };
+      } else {
+          results.AutoTagging = { status: 'FAIL', message: `Extraction failed. Got: Tags: ${extraction.tags.join(', ')}, Owners: ${extraction.owners.join(', ')}` };
+      }
+
+      results.EmptyFilter = { status: App.clearColumnFilters ? 'OK' : 'FAIL', message: App.clearColumnFilters ? 'Filter clear function defined.' : 'Filter clear function missing.' };
+
+      console.groupCollapsed('%c🛠️ Internal Self-Test Results', 'font-size: 14px; color: #4F46E5');
+      let allPassed = true;
+      for (const [key, result] of Object.entries(results)) {
+          const color = result.status === 'OK' ? '#10B981' : (result.status === 'WARN' ? '#F59E0B' : '#EF4444');
+          console.log(`%c[${result.status}] ${key}: %c${result.message}`, `color: ${color}; font-weight: bold;`, 'color: #6B7280; font-weight: normal;');
+          if (result.status !== 'OK') allPassed = false;
+      }
+      console.groupEnd();
+
+      if (!allPassed) {
+          Utils.showNotification('ATTENZIONE: Il self-test ha rilevato errori. Controlla la console.', 'danger');
+      }
+  },
+
+  createDemoData: async () => {
+    const projects = [
+      { name: 'Website Redesign', manager: 'Mario Rossi', status: 'Attivo', startDate: '2025-01-01', endDate: '2025-06-30' },
+      { name: 'Mobile App', manager: 'Laura Bianchi', status: 'In Pausa', startDate: '2025-02-01', endDate: '2025-12-31' }
+    ];
+
+    for (const project of projects) {
+      await ProjectsManager.createProject(project);
+    }
+
+    const tasks = [
+      { title: 'Design Homepage', status: 'In Corso', priority: 'Alta', assignee: 'Mario Rossi', project: 'Website Redesign', deadline: '2025-11-01', description: '## Obiettivo\nCreare mockup homepage con #[Frontend] per @[Cliente]', tags: ['Design'], owners: [], notes: [], timeSpent: '02:30:00' },
+      { title: 'Setup Database', status: 'Fatto', priority: 'Urgente', assignee: 'Laura Bianchi', project: 'Mobile App', deadline: '2025-10-20', description: 'Configurare database PostgreSQL', tags: ['Backend'], owners: [], notes: [], timeSpent: '04:15:00' },
+      { title: 'User Testing', status: 'Da Fare', priority: 'Media', assignee: 'Giuseppe Verdi', project: 'Website Redesign', deadline: '2025-11-30', description: 'Pianificare sessioni di #[Testing] con @[UX Team]', tags: ['Testing'], owners: [], notes: [], timeSpent: '00:00:00' },
+      { title: 'API Integration', status: 'In Revisione', priority: 'Alta', assignee: 'Laura Bianchi', project: 'Mobile App', deadline: '2025-10-25', description: 'Integrare REST API per #[Backend]', tags: ['Development'], owners: [], notes: [], timeSpent: '06:45:00' }
+    ];
+
+    for (const task of tasks) {
+      const taskId = await TasksManager.createTask(task);
+
+      if (taskId === 1) {
+        await SubtasksManager.addSubtask(taskId, { title: 'Create wireframes', status: 'Fatto', priority: 'Alta', assignee: 'Mario Rossi', timeSpent: '01:00:00' });
+        await SubtasksManager.addSubtask(taskId, { title: 'Review with team', status: 'In Corso', priority: 'Media', assignee: 'Mario Rossi', timeSpent: '00:30:00' });
+      }
+    }
+
+    await App.loadAllData();
+    App.renderTasks();
+    ViewsManager.renderProjects();
+    ViewsManager.updateSummaryStats();
+    ViewsManager.updateDeadlines();
+    Utils.showNotification('Dati demo caricati con successo!', 'success');
+  }
+};
+
+// Initialization Script
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Inizializzazione applicazione...');
+
+    setTimeout(function() {
+      console.log('✓ Tailwind CSS caricato');
+
+      // Initialize app
+      App.initialize().then(() => {
+        console.log('✅ Applicazione pronta!');
+
+        // Check if initial load is empty, then prompt for demo data
+        if (TasksManager.tasks.length === 0 && ProjectsManager.projects.length === 0) {
+            setTimeout(() => {
+              if (confirm('👋 Benvenuto! Vuoi caricare alcuni dati demo per iniziare?')) {
+                App.createDemoData();
+              }
+            }, 1000);
+          }
+      }).catch(error => {
+        console.error('❌ Errore inizializzazione:', error);
+      });
+
+    }, 100);
+  });
+
+  console.log('%c📋 Task Management App v2.8 (Modulare)', 'color: #4F46E5; font-size: 16px; font-weight: bold;');
+  console.log('%cApp caricata con successo!', 'color: #10B981;');
+  console.log('%c💡 Usa App.createDemoData() per caricare dati di esempio', 'color: #6B7280;');
+
+</script></body>
+</html>

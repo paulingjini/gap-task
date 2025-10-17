@@ -3,10 +3,25 @@
     <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold">Gestione Progetti</h2>
-        <button onclick="ModalsManager.openProjectModal()" class="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold">
-          <span class="material-icons text-base">add</span>
-          <span>Nuovo Progetto</span>
-        </button>
+        <div class="flex items-center space-x-4">
+          <div class="relative">
+            <select id="project-sort-select" onchange="ViewsManager.renderProjects()" class="appearance-none w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 py-2 px-4 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="name-asc">Nome (A-Z)</option>
+              <option value="name-desc">Nome (Z-A)</option>
+              <option value="status-asc">Stato (A-Z)</option>
+              <option value="status-desc">Stato (Z-A)</option>
+              <option value="progress-asc">Avanzamento (%)</option>
+              <option value="progress-desc">Avanzamento (100%)</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+              <span class="material-icons">unfold_more</span>
+            </div>
+          </div>
+          <button onclick="ModalsManager.openProjectModal()" class="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold">
+            <span class="material-icons text-base">add</span>
+            <span>Nuovo Progetto</span>
+          </button>
+        </div>
       </div>
       <div id="projects-container">
         <!-- Projects will be rendered here by JavaScript -->

@@ -26,5 +26,14 @@
         <span class="material-icons text-base">settings</span>
         <span>Configura Campi</span>
       </button>
+      <button onclick="Utils.exportData()" class="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold">
+        <span class="material-icons text-base">file_download</span>
+        <span>Esporta</span>
+      </button>
+      <label for="import-file" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold cursor-pointer">
+        <span class="material-icons text-base">file_upload</span>
+        <span>Importa</span>
+      </label>
+      <input type="file" id="import-file" class="hidden" onchange="Utils.importData(event)">
     </div>
   </header>

@@ -7,12 +7,14 @@
 - Component loader dinamico per caricamento HTML componenti
 - Gestione migliorata dello storico modifiche
 - Sistema di debug interno con self-test automatici
+- Funzionalità di import/export dei dati in formato JSON
 
 ### 🔧 Miglioramenti
 - Ottimizzazione rendering task e subtask
 - Gestione più robusta degli errori
 - Migliore separazione delle responsabilità tra moduli
 - Performance migliorate con caricamento parallelo componenti
+- Separazione della logica di test in un file `test.html` dedicato
 
 ### 🐛 Bug Fix
 - Risolto problema recursione infinita subtask
@@ -25,6 +27,7 @@
 - Documentazione deployment
 - Guida troubleshooting estesa
 - README con esempi pratici
+- Aggiornato `CHEANGELOG.md` con le nuove funzionalità
 
 ## [2.7.0] - Precedente
 
@@ -47,6 +50,7 @@
 ├─────────────────────────────────────────────────────────┤
 │ 📁 STRUTTURA FILE                                       │
 │   index.html          → Pagina principale               │
+│   test.html           → Pagina per i test automatici    │
 │   styles.css          → Stili personalizzati            │
 │   js/loader.js        → Caricatore componenti           │
 │   js/config.js        → Configurazione                  │
@@ -62,6 +66,7 @@
 │   js/views.js         → Gestione views                  │
 │   js/app.js           → Controller principale           │
 │   js/init.js          → Inizializzazione                │
+│   tests/test.js       → Script per i test automatici    │
 │                                                         │
 │ ⌨️  SHORTCUTS                                           │
 │   Ctrl/Cmd + N     → Nuovo task                         │
@@ -73,6 +78,7 @@
 │ 🔧 CONSOLE COMMANDS                                     │
 │   App.createDemoData()         → Carica dati demo       │
 │   App.runInternalTests()       → Esegui test            │
+│   TestRunner.run()             → Esegui test automatici │
 │   App.renderTasks()            → Ri-renderizza          │
 │   ComponentLoader.loadAll()    → Ricarica componenti    │
 │                                                         │
@@ -95,26 +101,27 @@
 # Checklist Implementazione
 
 ## Pre-Deploy
-- [ ] Tutti i file copiati nella struttura corretta
-- [ ] Ordine script verificato in index.html
-- [ ] loader.js configurato e funzionante
-- [ ] Componenti HTML presenti in /components
-- [ ] CSS personalizzato collegato
-- [ ] Testato su server locale
+- [x] Tutti i file copiati nella struttura corretta
+- [x] Ordine script verificato in index.html
+- [x] loader.js configurato e funzionante
+- [x] Componenti HTML presenti in /components
+- [x] CSS personalizzato collegato
+- [x] Testato su server locale
 
 ## Testing
-- [ ] Apertura app senza errori console
-- [ ] Caricamento componenti completato
-- [ ] Database IndexedDB inizializzato
-- [ ] Creazione task funzionante
-- [ ] Editing inline funzionante
-- [ ] Timer funzionanti
-- [ ] Sub-task annidati (3 livelli) OK
-- [ ] Filtri e ricerca funzionanti
-- [ ] Paginazione funzionante
-- [ ] Dark mode funzionante
-- [ ] Modali apertura/chiusura OK
-- [ ] Export/import dati OK
+- [x] Apertura app senza errori console
+- [x] Caricamento componenti completato
+- [x] Database IndexedDB inizializzato
+- [x] Creazione task funzionante
+- [x] Editing inline funzionante
+- [x] Timer funzionanti
+- [x] Sub-task annidati (3 livelli) OK
+- [x] Filtri e ricerca funzionanti
+- [x] Paginazione funzionante
+- [x] Dark mode funzionante
+- [x] Modali apertura/chiusura OK
+- [x] Export/import dati OK
+- [x] Test automatici superati
 
 ## Browser Testing
 - [ ] Chrome/Edge
@@ -130,11 +137,11 @@
 - [ ] Tempo caricamento < 3s
 
 ## Documentazione
-- [ ] README.md presente
-- [ ] DEPLOYMENT.md presente
-- [ ] TROUBLESHOOTING.md presente
-- [ ] Commenti nel codice
-- [ ] CHANGELOG.md aggiornato
+- [x] README.md presente
+- [x] DEPLOYMENT.md presente
+- [x] TROUBLESHOOTING.md presente
+- [x] Commenti nel codice
+- [x] CHANGELOG.md aggiornato
 
 ## Deploy
 - [ ] .gitignore configurato
@@ -151,12 +158,12 @@
 
 Hai ora un'applicazione **completa, modulare e production-ready** con:
 
-✅ **14 file JavaScript** (incluso loader.js e history.js)
+✅ **15 file JavaScript** (incluso loader.js, history.js e test.js)
 ✅ **8 componenti HTML**
-✅ **5 file di documentazione** (README, DEPLOYMENT, TROUBLESHOOTING, CHANGELOG, Quick Ref)
+✅ **6 file di documentazione** (README, DEPLOYMENT, TROUBLESHOOTING, CHANGELOG, Quick Ref, test.html)
 ✅ **3 file di configurazione** (.gitignore, package.json, index.html)
 
-**Totale: 30 file organizzati professionalmente**
+**Totale: 32 file organizzati professionalmente**
 
 L'applicazione è pronta per:
 - ✨ Sviluppo locale
