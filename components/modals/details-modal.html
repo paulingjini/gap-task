@@ -1,0 +1,103 @@
+<!-- Details Modal Component -->
+<div id="details-modal" class="modal">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 flex justify-between items-center">
+        <h2 class="text-2xl font-bold" id="details-modal-title">Dettagli Attività</h2>
+        <div class="flex items-center space-x-3">
+          <button onclick="ModalsManager.closeDetailsModal()" class="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-50">
+              <span class="material-icons">close</span>
+          </button>
+        </div>
+      </div>
+      <div class="p-6">
+          <form id="details-form" onsubmit="ModalsManager.saveDetails(event)">
+              <input type="hidden" id="details-item-id" />
+              <input type="hidden" id="details-is-subtask" />
+              
+              <div class="space-y-6">
+                  <!-- Sezione Titolo/Info Base -->
+                  <div class="border-b pb-4">
+                      <label class="block text-sm font-medium mb-2">Titolo *</label>
+                      <div id="details-field-title" class="text-xl font-bold p-2 border border-gray-200 dark:border-gray-700 rounded cursor-pointer" ondblclick="TasksManager.enableInlineEdit(document.getElementById('details-item-id').value, 'title', this.textContent.trim(), this, document.getElementById('details-is-subtask').value === 'true')">
+                          <!-- Populated by JS -->
+                      </div>
+                  </div>
+  
+                  <!-- Modulo Modifica/Visualizzazione -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                      <div>
+                          <label class="block text-sm font-medium mb-2">Stato *</label>
+                          <div id="details-field-status" class="p-2 border border-gray-200 dark:border-gray-700 rounded relative" ondblclick="TasksManager.enableInlineEdit(document.getElementById('details-item-id').value, 'status', this.dataset.value, this, document.getElementById('details-is-subtask').value === 'true')"></div>
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium mb-2">Priorità</label>
+                          <div id="details-field-priority" class="p-2 border border-gray-200 dark:border-gray-700 rounded relative" ondblclick="TasksManager.enableInlineEdit(document.getElementById('details-item-id').value, 'priority', this.dataset.value, this, document.getElementById('details-is-subtask').value === 'true')"></div>
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium mb-2">Responsabile</label>
+                          <div id="details-field-assignee" class="p-2 border border-gray-200 dark:border-gray-700 rounded relative" ondblclick="TasksManager.enableInlineEdit(document.getElementById('details-item-id').value, 'assignee', this.dataset.value, this, document.getElementById('details-is-subtask').value === 'true')"></div>
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium mb-2">Data Scadenza</label>
+                          <div id="details-field-deadline" class="p-2 border border-gray-200 dark:border-gray-700 rounded relative" ondblclick="TasksManager.enableInlineEdit(document.getElementById('details-item-id').value, 'deadline', this.dataset.value, this, document.getElementById('details-is-subtask').value === 'true')"></div>
+                      </div>
+                      <div id="details-project-container">
+                          <label class="block text-sm font-medium mb-2">Progetto</label>
+                          <div id="details-field-project" class="p-2 border border-gray-200 dark:border-gray-700 rounded relative" ondblclick="TasksManager.enableInlineEdit(document.getElementById('details-item-id').value, 'project', this.dataset.value, this, false)"></div>
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium mb-2">Tags</label>
+                          <div id="details-field-tags" class="p-2 border border-gray-200 dark:border-gray-700 rounded relative" ondblclick="TasksManager.enableInlineEdit(document.getElementById('details-item-id').value, 'tags', this.dataset.value.split(','), this, document.getElementById('details-is-subtask').value === 'true')"></div>
+                      </div>
+                  </div>
+  
+                  <!-- Descrizione (Markdown Editabile) -->
+                  <div class="border-t pt-4">
+                      <h3 class="font-semibold mb-3 flex items-center"><span class="material-icons text-base mr-2">description</span> Descrizione (Markdown)</h3>
+                      
+                      <div id="details-field-description" class="p-3 bg-gray-50 dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 relative">
+                          <textarea id="description-textarea" rows="4" class="w-full px-2 py-1 bg-transparent focus:outline-none focus:ring-0 text-sm" placeholder="Inserisci descrizione in Markdown..." onkeyup="ModalsManager.liveMarkdownPreview(this.value)"></textarea>
+                          <div id="markdown-preview" class="markdown-content-preview text-xs text-gray-800 dark:text-gray-200"></div>
+                      </div>
+                  </div>
+  
+                  <!-- Owners (Gestione automatica da @[] e manuale) -->
+                  <div class="border-t pt-4" id="details-owners-section">
+                      <div class="flex justify-between items-center mb-3">
+                          <h3 class="font-semibold flex items-center"><span class="material-icons text-base mr-2">people</span> Owners</h3>
+                          <button type="button" onclick="ModalsManager.addOwnerPrompt(document.getElementById('details-item-id').value)" class="text-sm text-blue-600 hover:text-blue-800">+ Aggiungi</button>
+                      </div>
+                      <div id="owners-list" class="flex flex-wrap gap-2 text-sm"></div>
+                  </div>
+  
+                  <!-- Sub-tasks -->
+                  <div id="details-subtasks-section">
+                      <!-- Section populated by JS if applicable -->
+                  </div>
+              
+                  <!-- Note Cronologiche -->
+                  <div class="border-t pt-4">
+                      <h3 class="font-semibold mb-3 flex items-center"><span class="material-icons text-base mr-2">notes</span> Note Cronologiche (Markdown)</h3>
+                      <div class="space-y-3 mb-4 max-h-64 overflow-y-auto" id="notes-list"></div>
+                      <div class="flex space-x-2">
+                          <textarea id="new-note-input" rows="3" placeholder="Aggiungi una nota (supporta **Markdown**) o menziona con #tag o @owner..." class="flex-grow px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm"></textarea>
+                          <button type="button" onclick="ModalsManager.addNoteFromInput(document.getElementById('details-item-id').value, document.getElementById('details-is-subtask').value === 'true')" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm h-10 self-start">
+                          Aggiungi
+                          </button>
+                      </div>
+                  </div>
+  
+              </div>
+  
+              <div class="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <button type="button" onclick="ModalsManager.closeDetailsModal()" class="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700">
+                      Chiudi
+                  </button>
+                  <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold">
+                      Salva Modifiche
+                  </button>
+              </div>
+          </form>
+      </div>
+    </div>
+  </div>

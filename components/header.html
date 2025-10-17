@@ -1,0 +1,30 @@
+<!-- Header Component -->
+<header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 no-print">
+    <div class="flex items-center space-x-2 mb-4 sm:mb-0">
+      <div class="bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-md">
+          <button onclick="ViewsManager.showView('tasks')" id="btn-tasks" class="px-3 py-1.5 text-sm font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md shadow-sm">
+            Attività
+          </button>
+          <button onclick="ViewsManager.showView('summary')" id="btn-summary" class="px-3 py-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md">
+            Riepilogo
+          </button>
+          <button onclick="ViewsManager.showView('projects')" id="btn-projects" class="px-3 py-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md">
+            Progetti
+          </button>
+          <button onclick="ViewsManager.showView('history')" id="btn-history" class="px-3 py-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md">
+            Storico
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center space-x-2">
+      <button onclick="App.toggleDarkMode()" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+        <span class="material-icons text-gray-500 dark:text-gray-400">dark_mode</span>
+      </button>
+      <button onclick="ModalsManager.openFieldConfig()" class="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold">
+        <span class="material-icons text-base">settings</span>
+        <span>Configura Campi</span>
+      </button>
+    </div>
+  </header>

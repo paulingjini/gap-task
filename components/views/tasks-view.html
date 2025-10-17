@@ -1,0 +1,68 @@
+<!-- Tasks View Component -->
+<div id="view-tasks" class="view-container">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-wrap gap-4 items-center mb-4 no-print">
+        <div class="relative flex-grow sm:flex-grow-0">
+          <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">search</span>
+          <input id="search-input" onkeyup="App.renderTasks()" class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-sm" placeholder="Cerca attività..." type="text"/>
+        </div>
+        <button onclick="ModalsManager.openNewTaskModal()" class="flex items-center space-x-2 px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700">
+          <span class="material-icons text-base">add</span>
+          <span>Aggiungi Attività</span>
+        </button>
+        <div class="relative">
+          <button onclick="App.toggleGroupMenu()" class="flex items-center space-x-2 px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700">
+            <span>Raggruppa: <strong id="current-group-label">Progetto</strong></span>
+            <span class="material-icons text-base">expand_more</span>
+          </button>
+          <div id="group-menu" class="hidden absolute top-full mt-1 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 min-w-[200px]">
+            <button onclick="App.setGroupBy('project')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">Per Progetto</button>
+            <button onclick="App.setGroupBy('status')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">Per Stato</button>
+            <button onclick="App.setGroupBy('priority')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">Per Priorità</button>
+            <button onclick="App.setGroupBy('assignee')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">Per Responsabile</button>
+            <button onclick="App.setGroupBy('category')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">Per Categoria</button>
+            <button onclick="App.setGroupBy('none')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm border-t border-gray-200 dark:border-gray-700">Nessun Raggruppamento</button>
+          </div>
+        </div>
+        <div class="flex-grow"></div>
+      </div>
+      
+      <div id="tasks-container" class="overflow-x-auto">
+        <!-- Tasks will be rendered here by JavaScript -->
+      </div>
+      
+      <!-- Pagination Controls -->
+      <div id="pagination-controls" class="flex justify-between items-center mt-4 text-sm no-print">
+          <span id="pagination-info" class="text-gray-500 dark:text-gray-400"></span>
+          <div class="flex space-x-2">
+              <button id="prev-page-btn" onclick="App.changePage(-1)" disabled class="px-3 py-1 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <span class="material-icons text-base align-middle">chevron_left</span>
+              </button>
+              <button id="next-page-btn" onclick="App.changePage(1)" disabled class="px-3 py-1 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <span class="material-icons text-base align-middle">chevron_right</span>
+              </button>
+          </div>
+      </div>
+    </div>
+  
+    <!-- Deadlines Section -->
+    <section class="mt-8">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-50">Riepilogo e Scadenze</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold mb-4 flex items-center">
+            <span class="material-icons text-yellow-500 mr-2">warning</span> In Scadenza
+          </h3>
+          <ul id="upcoming-deadlines" class="space-y-4"></ul>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold mb-4 flex items-center">
+            <span class="material-icons text-red-500 mr-2">error</span> Scadute
+          </h3>
+          <ul id="overdue-tasks" class="space-y-4"></ul>
+        </div>
+      </div>
+    </section>
+  </div>
