@@ -35,10 +35,14 @@
       </div>
     </div>
   
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <h3 class="text-lg font-semibold mb-4">Attività per Priorità</h3>
-        <div id="priority-chart" class="space-y-3"></div>
+        <canvas id="priority-chart"></canvas>
+      </div>
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-semibold mb-4">Attività per Stato</h3>
+        <canvas id="status-chart"></canvas>
       </div>
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <h3 class="text-lg font-semibold mb-4">Distribuzione per Responsabile</h3>
