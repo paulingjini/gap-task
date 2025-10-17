@@ -88,5 +88,66 @@ const Utils = {
       setTimeout(() => {
         notification.remove();
       }, 3000);
+    },
+
+    exportData: async () => {
+      try {
+        const dataToExport = {};
+        const stores = ['tasks', 'projects', 'subtasks', 'historyLog', 'config', 'fieldDomains'];
+
+        for (const storeName of stores) {
+          dataToExport[storeName] = await DatabaseManager.getAll(storeName);
+        }
+
+        const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `task-management-backup-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        Utils.showNotification('Dati esportati con successo!', 'success');
+      } catch (error) {
+        console.error('❌ Errore durante l\'esportazione:', error);
+        Utils.showNotification('Errore durante l\'esportazione.', 'danger');
+      }
+    },
+
+    importData: async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+
+          const transaction = DatabaseManager.db.transaction(DatabaseManager.db.objectStoreNames, 'readwrite');
+
+          for (const storeName of DatabaseManager.db.objectStoreNames) {
+            transaction.objectStore(storeName).clear();
+          }
+
+          for (const storeName in data) {
+            if (DatabaseManager.db.objectStoreNames.contains(storeName)) {
+              const store = transaction.objectStore(storeName);
+              for (const item of data[storeName]) {
+                store.put(item);
+              }
+            }
+          }
+
+          Utils.showNotification('Dati importati con successo! L\'app si ricaricherà.', 'success');
+          setTimeout(() => window.location.reload(), 2000);
+
+        } catch (error) {
+          console.error('❌ Errore durante l\'importazione:', error);
+          Utils.showNotification('Errore durante l\'importazione. Controlla il file.', 'danger');
+        }
+      };
+      reader.readAsText(file);
     }
   };
