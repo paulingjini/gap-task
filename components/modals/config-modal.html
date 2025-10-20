@@ -1,74 +1,69 @@
 <!-- Config Modal Component -->
 <div id="field-config-modal" class="modal">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-      <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 flex justify-between items-center">
-        <h2 class="text-2xl font-bold">Configurazione Campi e Colonne</h2>
-        <button onclick="ModalsManager.closeFieldConfig()" class="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-50">
-          <span class="material-icons">close</span>
-        </button>
-      </div>
-      <div class="p-6">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Colonna 1: Colonne e Aspetto -->
-          <div>
-            <h3 class="text-lg font-semibold mb-4">Aspetto e Colonne</h3>
-            <div class="space-y-4">
-              <!-- Font Configuration -->
-              <div>
-                <label class="block text-sm font-medium mb-2">Famiglia Font</label>
-                <select id="config-font-family" onchange="App.saveConfig('fontFamily', this.value)" class="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-lg text-sm">
-                  <option value="Inter" style="font-family: 'Inter', sans-serif;">Inter (Default)</option>
-                  <option value="Roboto" style="font-family: 'Roboto', sans-serif;">Roboto</option>
-                  <option value="Source Code Pro" style="font-family: 'Source Code Pro', monospace;">Source Code Pro</option>
-                  <option value="Inconsolata" style="font-family: 'Inconsolata', monospace;">Inconsolata</option>
-                </select>
-              </div>
-              <!-- Font Size Configuration -->
-              <div>
-                <label class="block text-sm font-medium mb-2">Dimensione Base Font</label>
-                <select id="config-font-size" onchange="App.saveConfig('fontSize', this.value)" class="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-lg text-sm">
-                  <option value="small">Piccolo (0.875rem)</option>
-                  <option value="medium">Medio (1rem)</option>
-                  <option value="large">Grande (1.125rem)</option>
-                </select>
-              </div>
-              <!-- Column Visibility -->
-              <h4 class="font-medium pt-2 border-t border-gray-200 dark:border-gray-700">Visibilità Colonne</h4>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                Trascina per riordinare. Usa gli interruttori per mostrare/nascondere.
-              </p>
-              <div id="columns-config" class="space-y-2"></div>
-            </div>
-          </div>
-          <!-- Colonna 2: Campi Personalizzati -->
-          <div>
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="text-lg font-semibold">Campi Personalizzati</h3>
-              <button onclick="Utils.showNotification('Funzionalità in sviluppo', 'info')" class="flex items-center space-x-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm">
-                <span class="material-icons text-base">add</span>
-                <span>Aggiungi</span>
-              </button>
-            </div>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              Aggiungi campi personalizzati per estendere le attività.
-            </p>
-            <div id="custom-fields-config" class="space-y-2"></div>
-          </div>
-          <!-- Colonna 3: Domini Dropdown -->
-          <div>
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="text-lg font-semibold">Domini Dropdown</h3>
-              <button onclick="Utils.showNotification('Funzionalità in sviluppo', 'info')" class="flex items-center space-x-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm">
-                <span class="material-icons text-base">add</span>
-                <span>Nuovo</span>
-              </button>
-            </div>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              Gestisci i valori per i campi dropdown.
-            </p>
-            <div id="field-domains-container" class="space-y-2"></div>
-          </div>
+    <div class="bg-card text-card-foreground rounded-lg shadow-xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto border">
+        <div class="sticky top-0 bg-card border-b p-6 flex justify-between items-center">
+            <h2 class="text-2xl font-bold">Configuration</h2>
+            <button onclick="ModalsManager.closeFieldConfig()" class="text-muted-foreground hover:text-foreground">
+                <span class="material-icons">close</span>
+            </button>
         </div>
-      </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Column 1: Appearance and Columns -->
+                <div class="rounded-xl border bg-card text-card-foreground shadow p-6">
+                    <h3 class="text-lg font-semibold mb-4">Appearance & Columns</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="config-font-family" class="block text-sm font-medium mb-2">Font Family</label>
+                            <select id="config-font-family" onchange="App.saveConfig('fontFamily', this.value)" class="w-full px-3 py-2 border border-input bg-background rounded-md text-sm">
+                                <option value="Inter" style="font-family: 'Inter', sans-serif;">Inter (Default)</option>
+                                <option value="Roboto" style="font-family: 'Roboto', sans-serif;">Roboto</option>
+                                <option value="Source Code Pro" style="font-family: 'Source Code Pro', monospace;">Source Code Pro</option>
+                                <option value="Inconsolata" style="font-family: 'Inconsolata', monospace;">Inconsolata</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="config-font-size" class="block text-sm font-medium mb-2">Base Font Size</label>
+                            <select id="config-font-size" onchange="App.saveConfig('fontSize', this.value)" class="w-full px-3 py-2 border border-input bg-background rounded-md text-sm">
+                                <option value="small">Small (0.875rem)</option>
+                                <option value="medium">Medium (1rem)</option>
+                                <option value="large">Large (1.125rem)</option>
+                            </select>
+                        </div>
+                        <h4 class="font-medium pt-2 border-t">Column Visibility</h4>
+                        <p class="text-sm text-muted-foreground mb-4">
+                            Drag to reorder. Use toggles to show/hide.
+                        </p>
+                        <div id="columns-config" class="space-y-2"></div>
+                    </div>
+                </div>
+                <!-- Column 2: Custom Fields -->
+                <div class="rounded-xl border bg-card text-card-foreground shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">Custom Fields</h3>
+                        <button onclick="Utils.showNotification('Feature in development', 'info')" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2">
+                            Add
+                        </button>
+                    </div>
+                    <p class="text-sm text-muted-foreground mb-4">
+                        Add custom fields to extend your tasks.
+                    </p>
+                    <div id="custom-fields-config" class="space-y-2"></div>
+                </div>
+                <!-- Column 3: Dropdown Domains -->
+                <div class="rounded-xl border bg-card text-card-foreground shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">Dropdown Domains</h3>
+                        <button onclick="Utils.showNotification('Feature in development', 'info')" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 h-9 px-4 py-2">
+                            New
+                        </button>
+                    </div>
+                    <p class="text-sm text-muted-foreground mb-4">
+                        Manage values for dropdown fields.
+                    </p>
+                    <div id="field-domains-container" class="space-y-2"></div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
+</div>

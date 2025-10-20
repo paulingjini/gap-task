@@ -1,12 +1,18 @@
 // Views Management Module
 const ViewsManager = {
-  
+
     showView: (viewName) => {
       const views = ['tasks', 'summary', 'projects', 'history'];
       views.forEach(view => {
         const el = document.getElementById(`view-${view}`);
         const btn = document.getElementById(`btn-${view}`);
-        if (el) el.style.display = view === viewName ? 'block' : 'none';
+        if (el) {
+          if (view === viewName) {
+            el.classList.add('active');
+          } else {
+            el.classList.remove('active');
+          }
+        }
         if (btn) {
           if (view === viewName) {
             btn.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'shadow-sm');
@@ -17,7 +23,7 @@ const ViewsManager = {
           }
         }
       });
-  
+
       if (viewName === 'summary') {
         ViewsManager.updateSummaryStats();
       } else if (viewName === 'projects') {
@@ -26,28 +32,28 @@ const ViewsManager = {
         ViewsManager.renderHistory();
       }
     },
-  
+
     updateSummaryStats: () => {
       const completed = TasksManager.tasks.filter(t => t.status === 'Fatto').length;
       const inProgress = TasksManager.tasks.filter(t => t.status === 'In Corso').length;
-      
+
       const now = new Date();
       const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
       const upcoming = TasksManager.tasks.filter(t => t.deadline && new Date(t.deadline) <= sevenDaysFromNow && new Date(t.deadline) >= now && t.status !== 'Fatto').length;
       const overdue = TasksManager.tasks.filter(t => t.deadline && new Date(t.deadline) < now && t.status !== 'Fatto').length;
-  
+
       document.getElementById('stat-complete').textContent = completed;
       document.getElementById('stat-inprogress').textContent = inProgress;
       document.getElementById('stat-upcoming').textContent = upcoming;
       document.getElementById('stat-overdue').textContent = overdue;
-  
+
       const priorityCounts = {
         'Urgente': TasksManager.tasks.filter(t => t.priority === 'Urgente' && t.status !== 'Fatto').length,
         'Alta': TasksManager.tasks.filter(t => t.priority === 'Alta' && t.status !== 'Fatto').length,
         'Media': TasksManager.tasks.filter(t => t.priority === 'Media' && t.status !== 'Fatto').length,
         'Bassa': TasksManager.tasks.filter(t => t.priority === 'Bassa' && t.status !== 'Fatto').length
       };
-  
+
       const priorityChartEl = document.getElementById('priority-chart');
       if (priorityChartEl) {
         let chartHtml = '';
@@ -67,7 +73,7 @@ const ViewsManager = {
         });
         priorityChartEl.innerHTML = chartHtml;
       }
-  
+
       const assignees = {};
       TasksManager.tasks.forEach(task => {
         const assignee = task.assignee || 'Non assegnato';
@@ -79,7 +85,7 @@ const ViewsManager = {
           assignees[assignee].completed++;
         }
       });
-  
+
       const assigneeTableEl = document.getElementById('assignee-table');
       if (assigneeTableEl) {
         let tableHtml = '<table class="w-full text-sm"><thead><tr><th class="text-left py-2">Responsabile</th><th class="text-right py-2">Totale</th><th class="text-right py-2">Completate</th></tr></thead><tbody>';
@@ -96,27 +102,27 @@ const ViewsManager = {
         assigneeTableEl.innerHTML = tableHtml;
       }
     },
-  
+
     updateDeadlines: () => {
       const now = new Date();
       const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-  
-      const upcoming = TasksManager.tasks.filter(t => 
-        t.deadline && 
-        new Date(t.deadline) <= sevenDaysFromNow && 
-        new Date(t.deadline) >= now && 
+
+      const upcoming = TasksManager.tasks.filter(t =>
+        t.deadline &&
+        new Date(t.deadline) <= sevenDaysFromNow &&
+        new Date(t.deadline) >= now &&
         t.status !== 'Fatto'
       ).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-  
-      const overdue = TasksManager.tasks.filter(t => 
-        t.deadline && 
-        new Date(t.deadline) < now && 
+
+      const overdue = TasksManager.tasks.filter(t =>
+        t.deadline &&
+        new Date(t.deadline) < now &&
         t.status !== 'Fatto'
       ).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-  
+
       const upcomingEl = document.getElementById('upcoming-deadlines');
       const overdueEl = document.getElementById('overdue-tasks');
-  
+
       if (upcomingEl) {
         if (upcoming.length === 0) {
           upcomingEl.innerHTML = '<li class="text-sm text-gray-500 dark:text-gray-400">Nessuna scadenza imminente</li>';
@@ -129,7 +135,7 @@ const ViewsManager = {
           `).join('');
         }
       }
-  
+
       if (overdueEl) {
         if (overdue.length === 0) {
           overdueEl.innerHTML = '<li class="text-sm text-gray-500 dark:text-gray-400">Nessuna attività scaduta</li>';
@@ -143,15 +149,15 @@ const ViewsManager = {
         }
       }
     },
-  
+
     renderProjects: () => {
       const container = document.getElementById('projects-container');
-      
+
       if (ProjectsManager.projects.length === 0) {
         container.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-8">Nessun progetto disponibile. Crea il tuo primo progetto!</p>';
         return;
       }
-      
+
       let html = '<table class="w-full text-sm"><thead class="text-xs text-gray-500 dark:text-gray-400 uppercase"><tr>';
       html += '<th class="py-2 px-3 text-left">Nome Progetto</th>';
       html += '<th class="py-2 px-3 text-left">Project Manager</th>';
@@ -159,19 +165,19 @@ const ViewsManager = {
       html += '<th class="py-2 px-3 text-left">Date</th>';
       html += '<th class="py-2 px-3 text-right">Azioni</th>';
       html += '</tr></thead><tbody>';
-      
+
       ProjectsManager.projects.forEach(project => {
         const statusColors = {
           'Attivo': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
           'In Pausa': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
           'Completato': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
         };
-        
+
         const progress = ProjectsManager.getProjectProgress(project.name);
         const projectTasks = ProjectsManager.getProjectTasks(project.name);
         const taskCount = projectTasks.length;
         const completedCount = projectTasks.filter(t => t.status === 'Fatto').length;
-        
+
         html += `<tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
           <td class="py-1 px-3">
             <div class="font-medium">${Utils.escapeHtml(project.name)}</div>
@@ -197,21 +203,21 @@ const ViewsManager = {
           </td>
         </tr>`;
       });
-      
+
       html += '</tbody></table>';
       container.innerHTML = html;
     },
-  
+
     renderHistory: async () => {
       const container = document.getElementById('history-container');
-      
+
       if (HistoryManager.historyLog.length === 0) {
         container.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-8">Nessuna modifica registrata.</p>';
         return;
       }
-  
+
       const logs = [...HistoryManager.historyLog].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  
+
       let html = '<div class="space-y-4">';
       logs.forEach(log => {
         const changesHtml = Object.entries(log.changes).map(([field, change]) => {
@@ -221,9 +227,9 @@ const ViewsManager = {
             return `<li><strong>${field}:</strong> ${Utils.escapeHtml(change.newValue || '-')}</li>`;
           }
         }).join('');
-  
+
         html += `
-          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div class="history-item bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
             <div class="flex justify-between items-start mb-2">
               <div>
                 <span class="font-semibold">${log.action}</span>
@@ -237,7 +243,7 @@ const ViewsManager = {
         `;
       });
       html += '</div>';
-  
+
       container.innerHTML = html;
     }
   };

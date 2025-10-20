@@ -1,5 +1,5 @@
 // Main Application Module
-const App = {
+window.App = {
     config: { ...AppConfig.DEFAULT_CONFIG },
   
     initialize: async () => {
@@ -24,6 +24,8 @@ const App = {
         
         console.log('✅ App inizializzata con successo!');
         App.runInternalTests();
+        window.dbInitialized = true;
+        ViewsManager.showView('tasks');
         
       } catch (error) {
         console.error('❌ Errore di inizializzazione:', error);
@@ -291,6 +293,12 @@ const App = {
   },
 
   createDemoData: async () => {
+    const demoDataCreated = await DatabaseManager.get('config', 'demoDataCreated');
+    if (demoDataCreated) {
+      console.log('Demo data already exists.');
+      return;
+    }
+
     const projects = [
       { name: 'Website Redesign', manager: 'Mario Rossi', status: 'Attivo', startDate: '2025-01-01', endDate: '2025-06-30' },
       { name: 'Mobile App', manager: 'Laura Bianchi', status: 'In Pausa', startDate: '2025-02-01', endDate: '2025-12-31' }
@@ -321,6 +329,16 @@ const App = {
     ViewsManager.renderProjects();
     ViewsManager.updateSummaryStats();
     ViewsManager.updateDeadlines();
+    await DatabaseManager.add('config', { key: 'demoDataCreated', value: true });
+    await HistoryManager.logChange('tasks', { id: 1, title: 'Design Homepage', status: 'In Corso', priority: 'Alta', assignee: 'Mario Rossi', project: 'Website Redesign', deadline: '2025-11-01', description: '## Obiettivo\nCreare mockup homepage con #[Frontend] per @[Cliente]', tags: ['Design'], owners: [], notes: [], timeSpent: '02:30:00' });
     Utils.showNotification('Dati demo caricati con successo!', 'success');
+  },
+
+  reset: async () => {
+    await DatabaseManager.clear();
+    await App.initialize();
   }
 };
+
+// For testing purposes
+window.HistoryManager = HistoryManager;

@@ -99,7 +99,7 @@ const RenderingManager = {
             <button onclick="event.stopPropagation(); ModalsManager.openAddSubtaskPrompt(${task.id})" class="text-green-500 hover:text-green-700" title="Aggiungi Sub-attività">
               <span class="material-icons text-base">add_task</span>
             </button>
-            <button onclick="event.stopPropagation(); TasksManager.deleteTask(${task.id}); App.renderTasks();" class="text-red-500 hover:text-red-700" title="Elimina">
+            <button onclick="event.stopPropagation(); TasksManager.deleteTask(${task.id})" class="text-red-500 hover:text-red-700" title="Elimina">
               <span class="material-icons text-base">delete</span>
             </button>
           </div>
