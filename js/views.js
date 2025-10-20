@@ -6,13 +6,7 @@ const ViewsManager = {
       views.forEach(view => {
         const el = document.getElementById(`view-${view}`);
         const btn = document.getElementById(`btn-${view}`);
-        if (el) {
-          if (view === viewName) {
-            el.classList.add('active');
-          } else {
-            el.classList.remove('active');
-          }
-        }
+        if (el) el.style.display = view === viewName ? 'block' : 'none';
         if (btn) {
           if (view === viewName) {
             btn.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'shadow-sm');
@@ -56,22 +50,55 @@ const ViewsManager = {
 
       const priorityChartEl = document.getElementById('priority-chart');
       if (priorityChartEl) {
-        let chartHtml = '';
-        Object.entries(priorityCounts).forEach(([priority, count]) => {
-          const percentage = TasksManager.tasks.length > 0 ? (count / TasksManager.tasks.length) * 100 : 0;
-          chartHtml += `
-            <div>
-              <div class="flex justify-between mb-1">
-                <span class="text-sm font-medium">${priority}</span>
-                <span class="text-sm text-gray-500">${count}</span>
-              </div>
-              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div class="bg-indigo-600 h-2 rounded-full" style="width: ${percentage}%"></div>
-              </div>
-            </div>
-          `;
+        new Chart(priorityChartEl, {
+          type: 'doughnut',
+          data: {
+            labels: Object.keys(priorityCounts),
+            datasets: [{
+              data: Object.values(priorityCounts),
+              backgroundColor: ['#EF4444', '#F97316', '#FBBF24', '#84CC16'],
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'top',
+              },
+            }
+          }
         });
-        priorityChartEl.innerHTML = chartHtml;
+      }
+
+      const statusCounts = {
+        'Da Fare': TasksManager.tasks.filter(t => t.status === 'Da Fare').length,
+        'In Corso': TasksManager.tasks.filter(t => t.status === 'In Corso').length,
+        'In Revisione': TasksManager.tasks.filter(t => t.status === 'In Revisione').length,
+        'Fatto': TasksManager.tasks.filter(t => t.status === 'Fatto').length,
+        'Bloccato': TasksManager.tasks.filter(t => t.status === 'Bloccato').length,
+        'In Attesa': TasksManager.tasks.filter(t => t.status === 'In Attesa').length,
+      };
+
+      const statusChartEl = document.getElementById('status-chart');
+      if (statusChartEl) {
+        new Chart(statusChartEl, {
+          type: 'doughnut',
+          data: {
+            labels: Object.keys(statusCounts),
+            datasets: [{
+              data: Object.values(statusCounts),
+              backgroundColor: ['#6B7280', '#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'],
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'top',
+              },
+            }
+          }
+        });
       }
 
       const assignees = {};
@@ -152,11 +179,30 @@ const ViewsManager = {
 
     renderProjects: () => {
       const container = document.getElementById('projects-container');
+      const sortValue = document.getElementById('project-sort-select')?.value || 'name-asc';
 
       if (ProjectsManager.projects.length === 0) {
         container.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-8">Nessun progetto disponibile. Crea il tuo primo progetto!</p>';
         return;
       }
+
+      let sortedProjects = [...ProjectsManager.projects];
+      const [sortBy, sortDir] = sortValue.split('-');
+
+      sortedProjects.sort((a, b) => {
+        let valA, valB;
+        if (sortBy === 'progress') {
+          valA = ProjectsManager.getProjectProgress(a.name);
+          valB = ProjectsManager.getProjectProgress(b.name);
+        } else {
+          valA = a[sortBy];
+          valB = b[sortBy];
+        }
+
+        if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+        if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
 
       let html = '<table class="w-full text-sm"><thead class="text-xs text-gray-500 dark:text-gray-400 uppercase"><tr>';
       html += '<th class="py-2 px-3 text-left">Nome Progetto</th>';
@@ -166,7 +212,7 @@ const ViewsManager = {
       html += '<th class="py-2 px-3 text-right">Azioni</th>';
       html += '</tr></thead><tbody>';
 
-      ProjectsManager.projects.forEach(project => {
+      sortedProjects.forEach(project => {
         const statusColors = {
           'Attivo': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
           'In Pausa': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
@@ -210,13 +256,34 @@ const ViewsManager = {
 
     renderHistory: async () => {
       const container = document.getElementById('history-container');
+      const searchInput = document.getElementById('history-search-input')?.value.toLowerCase() || '';
 
       if (HistoryManager.historyLog.length === 0) {
         container.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-8">Nessuna modifica registrata.</p>';
         return;
       }
 
-      const logs = [...HistoryManager.historyLog].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      let logs = [...HistoryManager.historyLog].sort((a, b) => new Date(b.timestamp) - new date(b.timestamp));
+
+      if (searchInput) {
+        logs = logs.filter(log => {
+          const searchTerm = searchInput.toLowerCase();
+          return (
+            log.action.toLowerCase().includes(searchTerm) ||
+            log.itemType.toLowerCase().includes(searchTerm) ||
+            log.itemTitle.toLowerCase().includes(searchTerm) ||
+            Object.values(log.changes).some(change =>
+              (change.oldValue?.toString().toLowerCase() || '').includes(searchTerm) ||
+              (change.newValue?.toString().toLowerCase() || '').includes(searchTerm)
+            )
+          );
+        });
+      }
+
+      if (logs.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-8">Nessun risultato per la ricerca.</p>';
+        return;
+      }
 
       let html = '<div class="space-y-4">';
       logs.forEach(log => {
@@ -229,7 +296,7 @@ const ViewsManager = {
         }).join('');
 
         html += `
-          <div class="history-item bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
             <div class="flex justify-between items-start mb-2">
               <div>
                 <span class="font-semibold">${log.action}</span>
