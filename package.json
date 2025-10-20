@@ -4,23 +4,24 @@
     "description": "Applicazione modulare per la gestione di task e progetti",
     "main": "index.html",
     "scripts": {
-      "start": "npx http-server -p 8000 -c-1",
-      "dev": "npx http-server -p 8000 -c-1 --cors",
-      "build": "npm run minify-js && npm run minify-css",
-      "minify-js": "terser js/*.js -o dist/bundle.min.js --compress --mangle",
-      "minify-css": "csso styles.css -o dist/styles.min.css"
+        "start": "npx http-server -p 8000 -c-1",
+        "dev": "npx http-server -p 8000 -c-1 --cors",
+        "build": "npm run minify-js && npm run minify-css",
+        "minify-js": "terser js/*.js -o dist/bundle.min.js --compress --mangle",
+        "minify-css": "csso styles.css -o dist/styles.min.css"
     },
     "keywords": [
-      "task-management",
-      "project-management",
-      "indexeddb",
-      "vanilla-js"
+        "task-management",
+        "project-management",
+        "indexeddb",
+        "vanilla-js"
     ],
     "author": "Your Name",
     "license": "MIT",
     "devDependencies": {
-      "csso-cli": "^4.0.2",
-      "http-server": "^14.1.1",
-      "terser": "^5.19.0"
+        "@playwright/test": "^1.56.1",
+        "csso-cli": "^4.0.2",
+        "http-server": "^14.1.1",
+        "terser": "^5.19.0"
     }
-  }
+}
